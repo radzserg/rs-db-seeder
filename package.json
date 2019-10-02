@@ -9,10 +9,12 @@
     "deploy": "npm run build && npm run copy:package && npm publish dist"
   },
   "keywords": [
+    "test data",
+    "fixtures",
     "factory girl",
+    "factory bot",
     "mocks",
-    "seed",
-    "test data"
+    "seed"
   ],
   "homepage": "https://github.com/radzserg/rs-factory-girl",
   "author": "Sergey Radzishevskii <radzserg@gmail.com>",
