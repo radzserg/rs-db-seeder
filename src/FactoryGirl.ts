@@ -57,4 +57,26 @@ export default class FactoryGirl {
         }
         return resultedData;
     }
+
+    public insert(name: string, data?: any) {
+        if (this.factories[name] === undefined) {
+            throw new Error(`Definition ${name} is not set up`);
+        }
+        const definition = this.factories[name];
+        const fakeData = definition.dataProvider(data);
+
+        const resultedData: any = {};
+        for (const fieldName of Object.keys(fakeData)) {
+            const fieldValue = fakeData[fieldName];
+            if (fieldValue instanceof RefFactory) {
+                resultedData[fieldName] = this.build(
+                    fieldName,
+                    data[fieldName]
+                );
+            } else {
+                resultedData[fieldName] = fieldValue;
+            }
+        }
+        return resultedData;
+    }
 }
