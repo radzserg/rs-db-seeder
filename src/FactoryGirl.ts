@@ -1,4 +1,5 @@
 import RefFactory from "./RefFactory";
+import { IStorageWriter } from "./IStorageWriter";
 
 export type DataProvider = (data?: any) => any;
 
@@ -17,37 +18,29 @@ interface IDefinition {
 }
 
 export default class FactoryGirl {
-    private definitions: { [name: string]: IDefinition } = {};
-    private factories: IFactoryGirl;
+    private factories: { [name: string]: IDefinition } = {};
+    private storage: IStorageWriter;
+
+    constructor(storage: IStorageWriter) {
+        this.storage = storage;
+    }
 
     public addFactory(
         definition: string,
         tableName: string,
         dataProvider: DataProvider
     ) {
-        this.definitions[definition] = {
+        this.factories[definition] = {
             tableName,
             dataProvider,
         };
-
-        const build = this.build.bind(this);
-        Object.defineProperty(this, definition, {
-            value: {
-                build: (data: any) => {
-                    return build(definition, data);
-                },
-                insert: (data: any) => {
-                    //return this.insert(definition, data);
-                },
-            },
-        });
     }
 
     public build(name: string, data?: any) {
-        if (this.definitions[name] === undefined) {
+        if (this.factories[name] === undefined) {
             throw new Error(`Definition ${name} is not set up`);
         }
-        const definition = this.definitions[name];
+        const definition = this.factories[name];
         const fakeData = definition.dataProvider(data);
 
         const resultedData: any = {};

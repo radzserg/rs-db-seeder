@@ -4,6 +4,7 @@ module.exports = {
   modulePaths: ["<rootDir>/src/"],
   modulePathIgnorePatterns: [
       "dist/",
-      "fakeClasses.ts"
+      "configureKnex.ts",
+      "KnexStorageWriter.ts"
   ]
 };
