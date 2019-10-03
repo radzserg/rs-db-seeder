@@ -1,8 +1,8 @@
-import FactoryGirl from "./FactoryGirl";
-import { ref } from "./RefFactory";
+import DbSeeder from "./DbSeeder";
+import { ref } from "./RefColumn";
 import { IStorageWriter } from "./IStorageWriter";
 
-export default FactoryGirl;
+export default DbSeeder;
 
 export {
     ref,

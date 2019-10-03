@@ -1,11 +1,11 @@
-# RS-Factory-Girl
+# RS DB Seeder
 
-`RS-Factory-Girl` allows you to populate DB tables for your tests easily.
+`RS DB Seeder` allows you to populate DB tables for your tests easily.
 
 # Getting Started
 
 ### DB Adapter
-Before we start we need to build our own DB provider implementing `IStorageWriter`.
+We need to build our own DB provider implementing `IStorageWriter` first.
 Here's a simple `knex` adapter for `pg`. 
 
 ```typescript
@@ -26,7 +26,7 @@ export class KnexStorageWriter implements IStorageWriter {
 
 const knex = configureKnex();
 const storage = new KnexStorageWriter(knex);
-const factoryGirl = new FactoryGirl(storage);
+const dbSeeder = new DbSeeder()(storage);
 ```
 
 ### Setup factories
@@ -38,10 +38,10 @@ const factoryGirl = new FactoryGirl(storage);
  * @param {DataProvider} dataProvider - data provider callback
  * @param {string} id = "id" - ID column name, by default id  
  */
-factoryGirl.addFactory("channel", "channels", (data: any = {}): any => {
+dbSeeder.addFactory("channel", "channels", (data: any = {}): any => {
     return { name: "channel_1" };
 });
-factoryGirl.addFactory("user", "users", (data: any = {}): any => {
+dbSeeder.addFactory("user", "users", (data: any = {}): any => {
     return {
         id: faker.random.number(999999),
         channel: ref("channel"),        // references to the another factory
@@ -54,23 +54,9 @@ factoryGirl.addFactory("user", "users", (data: any = {}): any => {
 
 ### Usage 
 
-`factoryGirl.build` - build method will only build data. It won't write it into the DB.
+`dbSeeder.insert` - will build and write data to the DB. Note: it's async method.
 ```typescript
-const data = await factoryGirl.insert("user", { id: 100 });
-/*
-    {
-      id: 100,
-      name: 'John',
-      phone: '55555555',
-      channel: { name: 'channel_1' },
-      foreign_id: 2132323
-    }
-*/
-```
-
-`factoryGirl.insert` - will build and write data to the DB. Note: it's async method.
-```typescript
-const data = await factoryGirl.insert("user", { id: 100 });
+const data = await dbSeeder.insert("user", { id: 100 });
 /*
    {
       id: 100,

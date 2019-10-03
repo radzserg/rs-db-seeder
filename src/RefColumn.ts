@@ -1,4 +1,4 @@
-export default class RefFactory {
+export default class RefColumn {
     private readonly name: string;
     private readonly refId: string;
     private readonly id: string;
@@ -22,5 +22,5 @@ export default class RefFactory {
 }
 
 export function ref(factoryName: string, id: string = 'id', refId?: string){
-    return new RefFactory(factoryName, id, refId);
+    return new RefColumn(factoryName, id, refId);
 }

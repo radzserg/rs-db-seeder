@@ -1,7 +1,7 @@
 {
-  "name": "rs-factory-girl",
+  "name": "rs-db-seeder",
   "version": "1.0.1",
-  "description": "factory girl",
+  "description": "DB seeder tool for testing",
   "scripts": {
     "test": "jest",
     "build": "rm -Rf ./dist/* && NODE_ENV=production tsc --build tsconfig.json",
@@ -16,7 +16,7 @@
     "mocks",
     "seed"
   ],
-  "homepage": "https://github.com/radzserg/rs-factory-girl",
+  "homepage": "https://github.com/radzserg/rs-db-seeder",
   "author": "Sergey Radzishevskii <radzserg@gmail.com>",
   "license": "ISC",
   "devDependencies": {
