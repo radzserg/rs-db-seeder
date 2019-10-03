@@ -1,4 +1,4 @@
-import DbSeeder, { IFactoryGirl } from "../DbSeeder";
+import DbSeeder from "../DbSeeder";
 import configureKnex from "./configureKnex";
 import { KnexStorageWriter } from "./KnexStorageWriter";
 import { ref } from "../RefColumn";
@@ -25,6 +25,21 @@ describe("FactoryGirl", () => {
     });
     afterEach(async () => {
         await knex.raw("ROLLBACK");
+    });
+
+    it("builds data - simple case", () => {
+        const data = dbSeeder.build("channel");
+        expect(data.name).toEqual("channel_1");
+    });
+
+    it("builds data with referenced field", () => {
+        const data = dbSeeder.build("user");
+        expect(data).toEqual({
+            id: 99,
+            name: "John",
+            phone: "55555555",
+            foreign_id: 2132323,
+        });
     });
 
     it("insert data - simple case", async () => {
@@ -61,6 +76,6 @@ describe("FactoryGirl", () => {
 
     async function channelsCountInDb(): Promise<number> {
         const [result] = await knex.table("channels").count("id");
-        return parseInt(result['count'], 10);
+        return parseInt(result["count"], 10);
     }
 });

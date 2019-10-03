@@ -67,3 +67,16 @@ const data = await dbSeeder.insert("user", { id: 100 });
     }
 */
 ``` 
+
+`dbSeeder.build` - build data without DB updates. Ref columns won't ne provided
+```typescript
+const data = factoryGirl.build("user", { id: 100 });
+/*
+    {
+      id: 100,
+      name: 'John',
+      phone: '55555555',
+      foreign_id: 2132323
+    }
+*/
+```
