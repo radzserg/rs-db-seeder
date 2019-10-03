@@ -7,8 +7,8 @@ export class KnexStorageWriter implements IStorageWriter {
         this.knex = knex;
     }
 
-    insert = async (tableName: string, data: any) => {
-        const result = await this.knex(tableName).insert(data, ["id"]);
+    insert = async (tableName: string, data: any, id: string = 'id') => {
+        const [result] = await this.knex(tableName).insert(data, [id]);
         return {
             ...result,
             ...data,
