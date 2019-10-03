@@ -60,9 +60,11 @@ export default class DbSeeder {
         for (const fieldName of Object.keys(fakeData)) {
             const fieldValue = fakeData[fieldName];
             if (fieldValue instanceof RefColumn) {
-                const refData = await this.insert(fieldName, data[fieldName]);
-                resultedData[fieldValue.getRefId()] =
-                    refData[fieldValue.getId()];
+                const refId = fieldValue.getRefId();
+                if (fakeData[refId] === undefined) {
+                    const refData = await this.insert(fieldName, data[fieldName]);
+                    resultedData[refId] = refData[fieldValue.getId()];
+                }
             } else {
                 resultedData[fieldName] = fieldValue;
             }

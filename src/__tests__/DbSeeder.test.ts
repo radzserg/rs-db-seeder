@@ -12,7 +12,7 @@ dbSeeder.addFactory("user", "users", (data: any = {}): any => {
         name: "John",
         phone: "55555555",
         channel: ref("channel"),
-        foreign_id: 2132323
+        foreign_id: 2132323,
     };
 });
 dbSeeder.addFactory("channel", "channels", (data: any = {}): any => {
@@ -29,16 +29,38 @@ describe("FactoryGirl", () => {
 
     it("insert data - simple case", async () => {
         const data = await dbSeeder.insert("channel");
-        expect(data.name).toEqual('channel_1');
+        expect(data.name).toEqual("channel_1");
         expect(data.id).not.toBeNull();
     });
 
     it("insert data with referenced field", async () => {
+        const channelsCount: number = await channelsCountInDb();
         const data = await dbSeeder.insert("user", { id: 100 });
-        expect(data.name).toEqual('John');
+        expect(data.name).toEqual("John");
         expect(data.id).toEqual(100);
-        expect(data.phone).toEqual('55555555');
+        expect(data.phone).toEqual("55555555");
         expect(data.channel_id).not.toBeNull();
         expect(data.foreign_id).toEqual(2132323);
+
+        const newChannelsCount: number = await channelsCountInDb();
+        expect(channelsCount + 1).toEqual(newChannelsCount);
     });
+
+    it("insert data when referenced field is provided", async () => {
+        const channelsCount: number = await channelsCountInDb();
+        const data = await dbSeeder.insert("user", { channel_id: 1 });
+        expect(data.name).toEqual("John");
+        expect(data.id).not.toBeNull();
+        expect(data.phone).toEqual("55555555");
+        expect(data.channel_id).toEqual(1);
+        expect(data.foreign_id).toEqual(2132323);
+
+        const newChannelsCount: number = await channelsCountInDb();
+        expect(channelsCount).toEqual(newChannelsCount);
+    });
+
+    async function channelsCountInDb(): Promise<number> {
+        const [result] = await knex.table("channels").count("id");
+        return parseInt(result['count'], 10);
+    }
 });
