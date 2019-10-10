@@ -26,7 +26,7 @@ export class KnexStorageWriter implements IStorageWriter {
 
 const knex = configureKnex();
 const storage = new KnexStorageWriter(knex);
-const dbSeeder = new DbSeeder()(storage);
+const dbSeeder = new DbSeeder(storage);
 ```
 
 ### Setup factories
@@ -54,7 +54,8 @@ dbSeeder.addFactory("user", "users", (data: any = {}): any => {
 
 ### Usage 
 
-`dbSeeder.insert` - will build and write data to the DB. Note: it's async method.
+`dbSeeder.insert` - will build and write data to the DB. Note: it's async method. All referenced fields will be built 
+and inserted as well, i.e. we will do 2 inserts into (ref) channels and users 
 ```typescript
 const data = await dbSeeder.insert("user", { id: 100 });
 /*

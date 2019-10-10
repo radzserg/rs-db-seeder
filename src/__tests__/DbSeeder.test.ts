@@ -74,6 +74,11 @@ describe("FactoryGirl", () => {
         expect(channelsCount).toEqual(newChannelsCount);
     });
 
+    it("inserts nested data with empty data", async () => {
+        const data = await dbSeeder.insert("user");
+        expect(data.id).not.toBeNull();
+    });
+
     async function channelsCountInDb(): Promise<number> {
         const [result] = await knex.table("channels").count("id");
         return parseInt(result["count"], 10);

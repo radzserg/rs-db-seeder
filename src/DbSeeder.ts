@@ -62,7 +62,8 @@ export default class DbSeeder {
             if (fieldValue instanceof RefColumn) {
                 const refId = fieldValue.getRefId();
                 if (fakeData[refId] === undefined) {
-                    const refData = await this.insert(fieldName, data[fieldName]);
+                    const nestedData = data ? data[fieldName] : {};
+                    const refData = await this.insert(fieldName, nestedData);
                     resultedData[refId] = refData[fieldValue.getId()];
                 }
             } else {
