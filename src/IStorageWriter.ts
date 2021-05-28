@@ -1,3 +1,3 @@
 export interface IStorageWriter {
-    insert: (tableName: string, data: any, id: string) => Promise<any>;
+    insert: (tableName: string, data: any) => Promise<any>;
 }

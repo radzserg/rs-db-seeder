@@ -1,0 +1,19 @@
+version: "3"
+services:
+  db:
+    image: postgres:11.5
+    ports:
+      - "5472:5432"
+    environment:
+      POSTGRES_HOST: localhost
+      POSTGRES_USER: rsdbseeder
+      POSTGRES_PASSWORD: rsdbseeder
+      POSTGRES_DB: rsdbseeder
+    volumes:
+      - ./docker_postgres_init.sql:/docker-entrypoint-initdb.d/init.sql
+      - rs_db_seeder_volume:/var/lib/postgresql/data
+
+
+volumes:
+  rs_db_seeder_volume:
+    driver: local

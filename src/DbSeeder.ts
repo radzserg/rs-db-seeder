@@ -73,8 +73,7 @@ export default class DbSeeder {
 
         return await this.storage.insert(
             factory.tableName,
-            resultedData,
-            factory.id
+            resultedData
         );
     }
 

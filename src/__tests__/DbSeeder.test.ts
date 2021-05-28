@@ -3,6 +3,8 @@ import configureKnex from "./configureKnex";
 import { KnexStorageWriter } from "./KnexStorageWriter";
 import { ref } from "../RefColumn";
 
+jest.setTimeout(30000);
+
 const knex = configureKnex();
 const storage = new KnexStorageWriter(knex);
 const dbSeeder = new DbSeeder(storage);
