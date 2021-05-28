@@ -1,13 +1,23 @@
 import DbSeeder from "../DbSeeder";
 import configureKnex from "./configureKnex";
 import { KnexStorageWriter } from "./KnexStorageWriter";
-import { ref } from "../RefColumn";
+import RefColumn, { ref } from "../RefColumn";
 
 jest.setTimeout(30000);
 
 const knex = configureKnex();
 const storage = new KnexStorageWriter(knex);
 const dbSeeder = new DbSeeder(storage);
+
+type UserData = {
+    id: number;
+    name: string;
+    phone: string;
+    channel: RefColumn;
+    channel_id: number;
+    foreign_id: number
+}
+
 dbSeeder.addFactory("user", "users", (data: any = {}): any => {
     return {
         id: 99,
@@ -52,7 +62,7 @@ describe("FactoryGirl", () => {
 
     it("insert data with referenced field", async () => {
         const channelsCount: number = await channelsCountInDb();
-        const data = await dbSeeder.insert("user", { id: 100 });
+        const data = await dbSeeder.insert<UserData>("user", { id: 100 });
         expect(data.name).toEqual("John");
         expect(data.id).toEqual(100);
         expect(data.phone).toEqual("55555555");
@@ -65,7 +75,7 @@ describe("FactoryGirl", () => {
 
     it("insert data when referenced field is provided", async () => {
         const channelsCount: number = await channelsCountInDb();
-        const data = await dbSeeder.insert("user", { channel_id: 1 });
+        const data = await dbSeeder.insert<UserData>("user", { channel_id: 1 });
         expect(data.name).toEqual("John");
         expect(data.id).not.toBeNull();
         expect(data.phone).toEqual("55555555");
