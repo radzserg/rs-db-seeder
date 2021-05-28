@@ -1,6 +1,17 @@
 import knex from "knex";
+import { Client } from "pg";
 
-export default function configureKnex(): knex {
+export function configurePgClint() {
+    return new Client({
+        host: "localhost",
+        user: "rsdbseeder",
+        password: "rsdbseeder",
+        database: "rsdbseeder",
+        port: 5472,
+    })
+}
+
+export function configureKnex(): knex {
     return knex({
         client: "pg",
         version: "11.5",

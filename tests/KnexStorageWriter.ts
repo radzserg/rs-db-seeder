@@ -1,5 +1,5 @@
 import * as Knex from "knex";
-import { IStorageWriter } from "../IStorageWriter";
+import { IStorageWriter } from "../src/IStorageWriter";
 
 export class KnexStorageWriter implements IStorageWriter {
     private knex: Knex;

@@ -1,6 +1,6 @@
 {
   "name": "rs-db-seeder",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "DB seeder tool for testing",
   "scripts": {
     "test": "jest",
@@ -21,6 +21,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^26.0.23",
+    "@types/pg": "^8.6.0",
     "jest": "^27.0.1",
     "knex": "^0.19.4",
     "pg": "^8.6.0",

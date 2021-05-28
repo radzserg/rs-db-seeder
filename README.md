@@ -24,7 +24,7 @@ export class KnexStorageWriter implements IStorageWriter {
     };
 }
 
-const knex = configureKnex();
+const knex = configure();
 const storage = new KnexStorageWriter(knex);
 const dbSeeder = new DbSeeder(storage);
 ```
