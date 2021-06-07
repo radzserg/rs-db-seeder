@@ -15,11 +15,11 @@ export class KnexStorageWriter implements IStorageWriter {
         this.knex = knex;
     }
 
-    insert = async (tableName: string, data: any, id: string = 'id') => {
-        const [result] = await this.knex(tableName).insert(data, [id]);
+    insert = async (tableName: string, data: any) => {
+        const [result] = await this.knex(tableName).insert(data);
         return {
-            ...result,
             ...data,
+            ...result,
         };
     };
 }
@@ -67,7 +67,13 @@ const data = await dbSeeder.insert("user", { id: 100 });
       foreign_id: 2132323
     }
 */
-``` 
+```
+
+Pass reference
+```
+const channel = await dbSeeder.insert("channel", { name: "awesome chanel" });
+const user = await dbSeeder.insert("user", { channel });
+```
 
 `dbSeeder.build` - build data without DB updates. Ref columns won't ne provided
 ```typescript
