@@ -11,7 +11,7 @@ export function configurePgClint() {
     });
 }
 
-export function configureKnex(): Knex {
+export function getKnexClient(): Knex {
     return knex({
         client: "pg",
         version: "11.5",

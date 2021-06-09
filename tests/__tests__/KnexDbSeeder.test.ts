@@ -1,13 +1,10 @@
 import DbSeeder from "../../src/DbSeeder";
-import { configureKnex } from "../configure";
+import { getKnexClient } from "../configure";
 import { KnexStorageWriter } from "../KnexStorageWriter";
 import { ref } from "../../src";
 
 describe("KnexStorageWriter", () => {
-    afterAll(async () => {
-        await knex.destroy();
-    });
-    const knex = configureKnex();
+    const knex = getKnexClient();
     const storage = new KnexStorageWriter(knex);
     const knexDbSeeder = new DbSeeder(storage);
 

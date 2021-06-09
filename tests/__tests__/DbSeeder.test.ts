@@ -1,5 +1,5 @@
 import DbSeeder from "../../src/DbSeeder";
-import { configureKnex } from "../configure";
+import { getKnexClient } from "../configure";
 import { KnexStorageWriter } from "../KnexStorageWriter";
 import RefColumn, { ref } from "../../src/RefColumn";
 
@@ -13,10 +13,7 @@ type UserData = {
 };
 
 describe("DbSeeder", () => {
-    afterAll(async () => {
-        await knex.destroy();
-    });
-    const knex = configureKnex();
+    const knex = getKnexClient();
     const storage = new KnexStorageWriter(knex);
 
     describe("user and channel relation", () => {
@@ -109,12 +106,24 @@ describe("DbSeeder", () => {
                 channel: { name: "my channel" },
             });
             expect(data.id).not.toBeNull();
-            const [channel] = await knex.table("channels").orderBy('id', 'desc');
+            const [channel] = await knex
+                .table("channels")
+                .orderBy("id", "desc");
             expect(channel).not.toBeNull();
-            expect(channel.name).toEqual("my channel")
+            expect(channel.name).toEqual("my channel");
         });
 
-        // todo pass channel { id : 12}
+        it("does not add new reference records if record ID field is provided", async () => {
+            const channel = await seeder.insert("channel");
+            const channelsCount: number = await channelsCountInDb();
+            const data = await seeder.insert("user", {
+                channel: { id: channel.id },
+            });
+            expect(data.id).not.toBeNull();
+            expect(data.channel_id).toEqual(channel.id);
+            const newChannelsCount: number = await channelsCountInDb();
+            expect(newChannelsCount).toEqual(channelsCount);
+        });
     });
 
     describe("relation with customized name", () => {
@@ -134,7 +143,7 @@ describe("DbSeeder", () => {
                 name: "John",
                 phone: "55555555",
                 foreign_id: 2132323,
-                ...data
+                ...data,
             }),
             refs: {
                 mainChannel: ref("channel", "id", "channel_id"),
@@ -213,7 +222,7 @@ describe("DbSeeder", () => {
     });
 
     async function channelsCountInDb(): Promise<number> {
-        const [result] = await knex.table("channels").count({count: '*'});
+        const [result] = await knex.table("channels").count({ count: "*" });
         return parseInt(result.count, 10);
     }
 });

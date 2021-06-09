@@ -48,11 +48,15 @@ export default class DbSeeder {
         await Promise.all(
             Object.keys(refs).map(async (refId) => {
                 const ref = refs[refId];
-                const nestedData = fakeData ? fakeData[ref.getFactoryId()] : {};
+                const nestedData: any = fakeData ? fakeData[ref.getFactoryId()] : {};
                 delete fakeData[ref.getFactoryId()];
                 const fieldName = ref.getRefId();
                 if (typeof fakeData[fieldName] !== "undefined") {
                     refData[fieldName] = fakeData[fieldName];
+                    return;
+                }
+                if (nestedData && nestedData[ref.getId()]) {
+                    refData[fieldName] = nestedData[ref.getId()];
                     return;
                 }
                 const nested = await this.insert(
