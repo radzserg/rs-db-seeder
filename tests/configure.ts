@@ -1,4 +1,4 @@
-import knex from "knex";
+import knex, { Knex } from "knex";
 import { Client } from "pg";
 
 export function configurePgClint() {
@@ -8,10 +8,10 @@ export function configurePgClint() {
         password: "rsdbseeder",
         database: "rsdbseeder",
         port: 5472,
-    })
+    });
 }
 
-export function configureKnex(): knex {
+export function configureKnex(): Knex {
     return knex({
         client: "pg",
         version: "11.5",
@@ -20,7 +20,7 @@ export function configureKnex(): knex {
             user: "rsdbseeder",
             password: "rsdbseeder",
             database: "rsdbseeder",
-            port: 5472
+            port: 5472,
         },
         searchPath: ["public", "rsdbseeder"],
     });

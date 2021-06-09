@@ -103,6 +103,18 @@ describe("DbSeeder", () => {
             const data = await seeder.insert("user");
             expect(data.id).not.toBeNull();
         });
+
+        it("inserts nested data with predefined values", async () => {
+            const data = await seeder.insert("user", {
+                channel: { name: "my channel" },
+            });
+            expect(data.id).not.toBeNull();
+            const [channel] = await knex.table("channels").orderBy('id', 'desc');
+            expect(channel).not.toBeNull();
+            expect(channel.name).toEqual("my channel")
+        });
+
+        // todo pass channel { id : 12}
     });
 
     describe("relation with customized name", () => {
@@ -117,12 +129,12 @@ describe("DbSeeder", () => {
         seeder.addFactory({
             id: "channelAuthors",
             tableName: "users",
-            dataProvider: (): any => ({
+            dataProvider: (data): any => ({
                 id: 99,
                 name: "John",
                 phone: "55555555",
-
                 foreign_id: 2132323,
+                ...data
             }),
             refs: {
                 mainChannel: ref("channel", "id", "channel_id"),
@@ -165,8 +177,43 @@ describe("DbSeeder", () => {
         });
     });
 
+    describe("predefined ralation column value", () => {
+        beforeEach(async () => {
+            await knex.raw("BEGIN");
+        });
+        afterEach(async () => {
+            await knex.raw("ROLLBACK");
+        });
+
+        const seeder = new DbSeeder(storage);
+        seeder.addFactory({
+            id: "user",
+            tableName: "users",
+            dataProvider: (): any => ({
+                id: 99,
+                name: "John",
+                phone: "55555555",
+                foreign_id: 2132323,
+                channel_id: 2,
+            }),
+        });
+
+        it("will use predefined value for a related record", async () => {
+            seeder.addFactory({
+                id: "channel",
+                tableName: "channels",
+                dataProvider: (data): any => ({ name: "channel_1", ...data }),
+            });
+            seeder.insert("channel", { id: 2 });
+
+            const user = await seeder.insert("user");
+            expect(user).not.toBeNull();
+            expect(user.channel_id).toEqual(2);
+        });
+    });
+
     async function channelsCountInDb(): Promise<number> {
-        const [result] = await knex.table("channels").count("id");
-        return parseInt(result["count"], 10);
+        const [result] = await knex.table("channels").count({count: '*'});
+        return parseInt(result.count, 10);
     }
 });
