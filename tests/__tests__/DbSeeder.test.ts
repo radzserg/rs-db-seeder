@@ -36,10 +36,12 @@ describe("DbSeeder", () => {
                 id: 99,
                 name: "John",
                 phone: "55555555",
-                channel: ref("channel"),
                 foreign_id: 2132323,
                 ...data,
             }),
+            refs: {
+                channel: ref("channel"),
+            },
         });
         seeder.addFactory({
             id: "channel",
@@ -119,14 +121,17 @@ describe("DbSeeder", () => {
                 id: 99,
                 name: "John",
                 phone: "55555555",
-                mainChannel: ref("channel", "id", "channel_id"),
+
                 foreign_id: 2132323,
             }),
+            refs: {
+                mainChannel: ref("channel", "id", "channel_id"),
+            },
         });
         seeder.addFactory({
             id: "channel",
             tableName: "channels",
-            dataProvider: (): any => ({ name: "channel_1" }),
+            dataProvider: (data): any => ({ name: "channel_1", ...data }),
         });
 
         it("insert data when referenced field is not provided", async () => {
@@ -143,7 +148,8 @@ describe("DbSeeder", () => {
         });
 
         it("insert data when referenced field is provided", async () => {
-            await seeder.insert("channel", { id: 2 });
+            const channel = await seeder.insert("channel", { id: 2 });
+            expect(channel.id).toEqual(2);
             const channelsCount: number = await channelsCountInDb();
             const data = await seeder.insert<UserData>("channelAuthors", {
                 channel_id: 2,

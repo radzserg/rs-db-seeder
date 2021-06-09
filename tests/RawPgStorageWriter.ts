@@ -1,5 +1,5 @@
 import { Client } from "pg";
-import { IStorageWriter } from "../src/IStorageWriter";
+import { IStorageWriter } from "../src";
 
 export class RawPgStorageWriter implements IStorageWriter {
     constructor(private readonly client: Client) {}

@@ -24,10 +24,12 @@ describe("RawPgSeeder", () => {
             id: 99,
             name: "John",
             phone: "55555555",
-            channel: ref("channel"),
             foreign_id: 21323,
             ...data,
         }),
+        refs: {
+            channel: ref("channel"),
+        },
     });
     rawPgDbSeeder.addFactory({
         id: "channel",
