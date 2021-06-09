@@ -3,8 +3,6 @@ import RefColumn, { ref } from "../../src/RefColumn";
 import { configurePgClint } from "../configure";
 import { RawPgStorageWriter } from "../RawPgStorageWriter";
 
-jest.setTimeout(10000)
-
 type UserData = {
     id: number;
     name: string;
