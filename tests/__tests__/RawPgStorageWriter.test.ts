@@ -17,17 +17,22 @@ describe("RawPgSeeder", () => {
     const storage = new RawPgStorageWriter(pgClient);
     const rawPgDbSeeder = new DbSeeder(storage);
 
-    rawPgDbSeeder.addFactory("user", "users", (data: any = {}): any => {
-        return {
-            id: 1000,
+    rawPgDbSeeder.addFactory({
+        id: "user",
+        tableName: "users",
+        dataProvider: (data: any): any => ({
+            id: 99,
             name: "John",
             phone: "55555555",
             channel: ref("channel"),
             foreign_id: 21323,
-        };
+            ...data,
+        }),
     });
-    rawPgDbSeeder.addFactory("channel", "channels", (data: any = {}): any => {
-        return { name: "channel_1" };
+    rawPgDbSeeder.addFactory({
+        id: "channel",
+        tableName: "channels",
+        dataProvider: (data: any): any => ({ name: "channel_1", ...data }),
     });
 
     beforeAll(async () => {

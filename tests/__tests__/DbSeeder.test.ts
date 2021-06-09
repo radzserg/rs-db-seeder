@@ -29,17 +29,22 @@ describe("DbSeeder", () => {
             await knex.raw("ROLLBACK");
         });
 
-        seeder.addFactory("user", "users", (data: any = {}): any => {
-            return {
+        seeder.addFactory({
+            id: "user",
+            tableName: "users",
+            dataProvider: (data: any): any => ({
                 id: 99,
                 name: "John",
                 phone: "55555555",
                 channel: ref("channel"),
                 foreign_id: 2132323,
-            };
+                ...data,
+            }),
         });
-        seeder.addFactory("channel", "channels", (data: any = {}): any => {
-            return { name: "channel_1" };
+        seeder.addFactory({
+            id: "channel",
+            tableName: "channels",
+            dataProvider: (data: any): any => ({ name: "channel_1", ...data }),
         });
 
         it("builds data - simple case", () => {
@@ -107,17 +112,21 @@ describe("DbSeeder", () => {
         });
 
         const seeder = new DbSeeder(storage);
-        seeder.addFactory("channelAuthors", "users", (data: any = {}): any => {
-            return {
-                mainChannel: ref("channel", "id", "channel_id"),
+        seeder.addFactory({
+            id: "channelAuthors",
+            tableName: "users",
+            dataProvider: (): any => ({
                 id: 99,
                 name: "John",
                 phone: "55555555",
+                mainChannel: ref("channel", "id", "channel_id"),
                 foreign_id: 2132323,
-            };
+            }),
         });
-        seeder.addFactory("channel", "channels", (data: any = {}): any => {
-            return { name: "channel_1" };
+        seeder.addFactory({
+            id: "channel",
+            tableName: "channels",
+            dataProvider: (): any => ({ name: "channel_1" }),
         });
 
         it("insert data when referenced field is not provided", async () => {
