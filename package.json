@@ -1,6 +1,6 @@
 {
   "name": "rs-db-seeder",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "DB seeder tool for testing",
   "scripts": {
     "test": "jest",

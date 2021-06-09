@@ -3,10 +3,6 @@ import { IStorageWriter } from "./IStorageWriter";
 
 export type DataProvider = () => any;
 
-export interface IFactoryGirl {
-    [key: string]: IFactory;
-}
-
 interface IFactory {
     tableName: string;
     id: string;
@@ -15,7 +11,7 @@ interface IFactory {
 
 type FakeData = {
     [key: string]: any;
-}
+};
 
 /**
  * Allows to easily seed DB. Useful for tests.
@@ -57,7 +53,7 @@ export default class DbSeeder {
         const factory = this.getFactory(name);
         const fakeData = {
             ...factory.dataProvider(),
-            ...data
+            ...data,
         };
 
         const resultedData: any = {};
@@ -67,7 +63,10 @@ export default class DbSeeder {
                 const refId = fieldValue.getRefId();
                 if (fakeData[refId] === undefined) {
                     const nestedData = data ? data[fieldName] : {};
-                    const refData = await this.insert(fieldName, nestedData);
+                    const refData = await this.insert(
+                        fieldValue.getFactoryName(),
+                        nestedData
+                    );
                     resultedData[refId] = refData[fieldValue.getId()];
                 }
             } else {
@@ -75,10 +74,7 @@ export default class DbSeeder {
             }
         }
 
-        return await this.storage.insert(
-            factory.tableName,
-            resultedData
-        );
+        return await this.storage.insert(factory.tableName, resultedData);
     }
 
     /**
@@ -90,7 +86,7 @@ export default class DbSeeder {
         const factory = this.getFactory(name);
         const fakeData = {
             ...factory.dataProvider(),
-            ...data
+            ...data,
         };
 
         const resultedData: any = {};
@@ -102,7 +98,6 @@ export default class DbSeeder {
         }
         return resultedData;
     }
-
 
     private getFactory(name: string): IFactory {
         const factory = this.factories[name];
