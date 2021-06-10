@@ -9,10 +9,9 @@ interface IFactory {
     id: string; // unique factory ID
     tableName: string; // name of the table where factory will write data
     dataProvider: DataProvider; // function that will create mock data
-    insert?: () => any; // custom insert implementation, (useful for non-trivial cases)
-    refs?: {
-        [key: string]: RefColumn;
-    };
+    // custom insert implementation, (useful for non-trivial cases)
+    insert?: <T extends FakeData>(data?: Partial<T>) => Promise<Partial<T>>;
+    refs?: RefColumn[];
 }
 
 type FakeData = {
@@ -43,12 +42,13 @@ export default class DbSeeder {
         const factory = this.getFactory(id);
         const fakeData = factory.dataProvider(data);
 
-        const refs = factory.refs ?? {};
+        const refs = factory.refs ?? [];
         const refData: any = {};
         await Promise.all(
-            Object.keys(refs).map(async (refId) => {
-                const ref = refs[refId];
-                const nestedData: any = fakeData ? fakeData[ref.getFactoryId()] : {};
+            refs.map(async (ref) => {
+                const nestedData: any = fakeData
+                    ? fakeData[ref.getFactoryId()]
+                    : {};
                 delete fakeData[ref.getFactoryId()];
                 const fieldName = ref.getRefId();
                 if (typeof fakeData[fieldName] !== "undefined") {
@@ -72,7 +72,12 @@ export default class DbSeeder {
             ...refData,
         };
 
-        return await this.storage.insert(factory.tableName, resultedData);
+        if (factory.insert) {
+            return await factory.insert(resultedData);
+        } else {
+            return await this.storage.insert(factory.tableName, resultedData);
+        }
+
     }
 
     /**

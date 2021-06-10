@@ -61,10 +61,6 @@ export class KnexStorageWriter implements IStorageWriter {
         };
     };
 }
-
-const knex = configure();
-const storage = new KnexStorageWriter(knex);
-const dbSeeder = new DbSeeder(storage);
 ```
 
 ### Setup factories
@@ -74,24 +70,25 @@ the dependent tables.
 
 
 ```typescript
-/**
- * Adds new factory
- * @param {string} name - factory name, i.e. user, post
- * @param {string} tableName - table name, i.e. users tbl_user etc
- * @param {DataProvider} dataProvider - data provider callback
- * @param {string} id = "id" - ID column name, by default id
- */
-dbSeeder.addFactory("channel", "channels", (data: any = {}): any => {
-    return { name: "channel_1" };
+seeder.addFactory({
+    id: "user",             // unique factory ID 
+    tableName: "users",     // table name 
+    dataProvider: (data: any): any => ({    // data provider implementation
+        id: 99,
+        name: "John",
+        phone: "55555555",
+        foreign_id: 2132323,
+        ...data,
+    }),
+    refs: [                                // identify dependent relations
+        ref("channel"),   // by default consider users.channel_id => {channel}.id 
+        // alternatively  you can do  `ref("channel", 'uuid', ch_id)` users.ch_id => {channel}.uuid 
+    ],
 });
-dbSeeder.addFactory("user", "users", (data: any = {}): any => {
-    return {
-        id: faker.random.number(999999),
-        channel: ref("channel"), // references to the another factory
-        foreign_id: faker.random.number(999999999),
-        name: faker.name.findName(),
-        phone: faker.phone.phoneNumber(),
-    };
+seeder.addFactory({
+    id: "channel",
+    tableName: "channels",
+    dataProvider: (data: any): any => ({ name: "channel_1", ...data }),
 });
 ```
 
@@ -101,6 +98,24 @@ dbSeeder.addFactory("user", "users", (data: any = {}): any => {
 
 Build operation allows you to build fake data for your entity. Data is not written to the database. It is somewhat 
 like a faker, it just builds data for the entire entity. Note: data for referenced tables 
+
+```typescript
+
+const knex = configure();
+const storage = new KnexStorageWriter(knex);
+const dbSeeder = new DbSeeder(storage);
+
+it("updates user email", () => {
+    const user = seeder.build("user", { name: "john" });
+    
+    const updatedUser = myUserMananger.updateName("tom") 
+    expect(updatedUser.name).toEqual("tom");
+});
+```
+
+# API
+
+### Build
 
 ```typescript
 const data = dbSeeder.build("user", { id: 100 });
@@ -113,7 +128,7 @@ const data = dbSeeder.build("user", { id: 100 });
 ```
 Note: data for referenced tables is not added. At the same time, no one bothers to add them ourselves.
 
-```
+```typescript
 const data = dbSeeder.build("user", { id: 100, channel: dbSeeder.build("channel") });
     // {
     //   id: 100,
@@ -126,7 +141,7 @@ const data = dbSeeder.build("user", { id: 100, channel: dbSeeder.build("channel"
     // }
 ```
 
-## Insert
+### Insert
 
 `dbSeeder.insert` - will build and write data to the DB. Note: it's async method. All referenced fields will be built
 and inserted as well, i.e. we will do 2 inserts into (ref) channels and users
@@ -146,13 +161,44 @@ const data = await dbSeeder.insert("user", { id: 100 });
 
 If you created a dependent entity before, pass it as a pass it as a simple column value
 
-```
+```typescript
 const channel = dbSeeder.build("channel" });
 const data = dbSeeder.build("user", { id: 100, channel_id: channel.id });
 ```
 
 if you pass data as an object 
-```
+```typescript
 const data = dbSeeder.build("user", { id: 100, channel: { name: "my channel"} });
 ```
 `{ name: "my channel"}` will be passed to channel `insert` method.
+
+
+if you pass data as an object and an id field is specified, the dependent record will not be inserted.
+```typescript
+const data = dbSeeder.build("user", { id: 100, channel: { id: 123 } });
+```
+
+### Custom insert implementation 
+
+It's possible to provide custom insert implementation
+
+```typescript
+seeder.addFactory({
+    id: "user",
+    tableName: "users",
+    dataProvider: (data): any => ({
+        id: 99,
+        name: "John",
+        phone: "55555555",
+        foreign_id: 2132323,
+        ...data
+    }),
+    insert: async (data: any) => {
+        const [user] = await knex("users")
+            .insert(data, "*")
+            .onConflict("foreign_id")
+            .merge();
+        return user;
+    },
+});
+```

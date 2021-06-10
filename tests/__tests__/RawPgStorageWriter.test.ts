@@ -27,9 +27,7 @@ describe("RawPgSeeder", () => {
             foreign_id: 21323,
             ...data,
         }),
-        refs: {
-            channel: ref("channel"),
-        },
+        refs: [ref("channel")],
     });
     rawPgDbSeeder.addFactory({
         id: "channel",

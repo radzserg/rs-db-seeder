@@ -36,9 +36,7 @@ describe("DbSeeder", () => {
                 foreign_id: 2132323,
                 ...data,
             }),
-            refs: {
-                channel: ref("channel"),
-            },
+            refs: [ref("channel")],
         });
         seeder.addFactory({
             id: "channel",
@@ -145,9 +143,7 @@ describe("DbSeeder", () => {
                 foreign_id: 2132323,
                 ...data,
             }),
-            refs: {
-                mainChannel: ref("channel", "id", "channel_id"),
-            },
+            refs: [ref("channel", "id", "channel_id")],
         });
         seeder.addFactory({
             id: "channel",
@@ -186,7 +182,7 @@ describe("DbSeeder", () => {
         });
     });
 
-    describe("predefined ralation column value", () => {
+    describe("predefined relation column value", () => {
         beforeEach(async () => {
             await knex.raw("BEGIN");
         });
@@ -218,6 +214,57 @@ describe("DbSeeder", () => {
             const user = await seeder.insert("user");
             expect(user).not.toBeNull();
             expect(user.channel_id).toEqual(2);
+        });
+    });
+
+    describe("custom insert method", () => {
+        beforeEach(async () => {
+            await knex.raw("BEGIN");
+        });
+        afterEach(async () => {
+            await knex.raw("ROLLBACK");
+        });
+
+        const seeder = new DbSeeder(storage);
+        seeder.addFactory({
+            id: "channel",
+            tableName: "channels",
+            dataProvider: (data): any => ({ name: "channel_1", ...data }),
+        });
+        seeder.addFactory({
+            id: "user",
+            tableName: "users",
+            dataProvider: (data): any => ({
+                id: 99,
+                name: "John",
+                phone: "55555555",
+                foreign_id: 2132323,
+                ...data,
+            }),
+            refs: [ref("channel")],
+            insert: async (data: any) => {
+                const [user] = await knex("users")
+                    .insert(data, "*")
+                    .onConflict("foreign_id")
+                    .merge();
+                return user;
+            },
+        });
+
+        it("makes custom insert", async () => {
+            const channel = await seeder.insert("channel");
+            const user1 = await seeder.insert("user", {
+                foreign_id: 123,
+                name: "john",
+                channel,
+            });
+            expect(user1).not.toBeNull();
+            const user2 = await seeder.insert("user", {
+                foreign_id: 123,
+                name: "tom",
+                channel,
+            });
+            expect(user2).not.toBeNull();
         });
     });
 

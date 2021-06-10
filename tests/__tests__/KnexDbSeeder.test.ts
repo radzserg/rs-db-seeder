@@ -18,9 +18,7 @@ describe("KnexStorageWriter", () => {
             foreign_id: 2132323,
             ...data,
         }),
-        refs: {
-            channel: ref("channel"),
-        },
+        refs: [ref("channel")],
     });
     knexDbSeeder.addFactory({
         id: "channel",
