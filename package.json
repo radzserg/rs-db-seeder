@@ -6,7 +6,8 @@
     "test": "jest",
     "build": "rm -Rf ./dist/* && NODE_ENV=production tsc --build tsconfig.json",
     "copy:package": "cp README.md package.json dist/",
-    "deploy": "npm run build && npm run copy:package && npm publish dist"
+    "deploy": "npm run build && npm run copy:package && npm run publish",
+    "publish": "cd dist && npm publish ."
   },
   "keywords": [
     "test data",
