@@ -1,12 +1,13 @@
 {
   "name": "rs-db-seeder",
-  "version": "1.0.5",
+  "version": "2.0.0",
   "description": "DB seeder tool for testing",
   "scripts": {
     "test": "jest",
     "build": "rm -Rf ./dist/* && NODE_ENV=production tsc --build tsconfig.json",
     "copy:package": "cp README.md package.json dist/",
-    "deploy": "npm run build && npm run copy:package && npm publish dist"
+    "deploy": "npm run build && npm run copy:package && npm run publish",
+    "publish": "cd dist && npm publish ."
   },
   "keywords": [
     "test data",
@@ -23,7 +24,7 @@
     "@types/jest": "^26.0.23",
     "@types/pg": "^8.6.0",
     "jest": "^27.0.1",
-    "knex": "^0.19.4",
+    "knex": "^0.95.6",
     "pg": "^8.6.0",
     "ts-jest": "^27.0.1",
     "typescript": "^4.3.2"

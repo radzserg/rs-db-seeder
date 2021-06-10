@@ -1,16 +1,22 @@
 export default class RefColumn {
-    private readonly factoryName: string;
+    private readonly factoryId: string;
     private readonly refId: string;
     private readonly id: string;
 
-    constructor(factoryName: string, id: string = "id", refId?: string) {
-        this.factoryName = factoryName;
-        this.refId = refId ?? `${this.factoryName}_id`;
+    /**
+     *
+     * @param factoryId - unique factory ID
+     * @param id - field name that will be used as id column
+     * @param refId - reference column name, by default factoryId + '_id'
+     */
+    constructor(factoryId: string, id: string = "id", refId?: string) {
+        this.factoryId = factoryId;
+        this.refId = refId ?? `${this.factoryId}_id`;
         this.id = id;
     }
 
-    public getFactoryName() {
-        return this.factoryName;
+    public getFactoryId() {
+        return this.factoryId;
     }
 
     public getRefId() {
@@ -22,6 +28,12 @@ export default class RefColumn {
     }
 }
 
-export function ref(factoryName: string, id: string = "id", refId?: string) {
-    return new RefColumn(factoryName, id, refId);
+/**
+ *
+ * @param factoryId - unique factory ID
+ * @param id - field name that will be used as id column
+ * @param refId - reference column name, by default factoryId + '_id'
+ */
+export function ref(factoryId: string, id: string = "id", refId?: string) {
+    return new RefColumn(factoryId, id, refId);
 }
