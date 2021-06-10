@@ -5,14 +5,14 @@
 ## Motivation
 
 When you have many dependent tables, it becomes difficult to create test data. Sometimes you need to test the function
-of changing a user's email address, , but you need to create two more dependent tables because the user tables have 
+of changing a user's email address, but you need to create two more dependent tables because the user table has 
 constraints.
 
 ![dependent tables](https://github.com/radzserg/rs-db-seeder/blob/master/docs/dependent_tables_hor.png)
 
 In order to create `user` you have to create `project` and `channel` records first.
 
-```
+```typescript
 const { rows: project} = client.query({
   text: 'INSERT INTO projects(name, description) VALUES($1, $2)',
   values: ['Foo Project', 'Bla bla bla'],
@@ -29,7 +29,7 @@ const { rows: user} = client.query({
 
 rs-db-seeder allows you to do it in just one step
 
-```
+```typescript
 await dbSeeder.insert("user", { name: "john" });
 ```
 
