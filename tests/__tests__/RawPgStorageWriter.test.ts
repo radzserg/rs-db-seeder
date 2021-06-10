@@ -52,7 +52,7 @@ describe("RawPgSeeder", () => {
 
     it("insert data with referenced field using raw pg", async () => {
         const channelsCount: number = await channelsCountInDb();
-        const data = await rawPgDbSeeder.insert<UserData>("user", { id: 100 });
+        const data = await rawPgDbSeeder.insert("user", { id: 100 });
         expect(data.name).toEqual("John");
         expect(data.id).toEqual(100);
         expect(data.phone).toEqual("55555555");

@@ -67,7 +67,7 @@ describe("DbSeeder", () => {
 
         it("insert data with referenced field", async () => {
             const channelsCount: number = await channelsCountInDb();
-            const data = await seeder.insert<UserData>("user", { id: 100 });
+            const data = await seeder.insert("user", { id: 100 });
             expect(data.name).toEqual("John");
             expect(data.id).toEqual(100);
             expect(data.phone).toEqual("55555555");
@@ -81,7 +81,7 @@ describe("DbSeeder", () => {
         it("insert data when referenced field is provided", async () => {
             await seeder.insert("channel", { id: 2 });
             const channelsCount: number = await channelsCountInDb();
-            const data = await seeder.insert<UserData>("user", {
+            const data = await seeder.insert("user", {
                 channel_id: 2,
             });
             expect(data.name).toEqual("John");
@@ -153,7 +153,7 @@ describe("DbSeeder", () => {
 
         it("insert data when referenced field is not provided", async () => {
             const channelsCount: number = await channelsCountInDb();
-            const data = await seeder.insert<UserData>("channelAuthors");
+            const data = await seeder.insert("channelAuthors");
             expect(data.name).toEqual("John");
             expect(data.id).not.toBeNull();
             expect(data.phone).toEqual("55555555");
@@ -168,7 +168,7 @@ describe("DbSeeder", () => {
             const channel = await seeder.insert("channel", { id: 2 });
             expect(channel.id).toEqual(2);
             const channelsCount: number = await channelsCountInDb();
-            const data = await seeder.insert<UserData>("channelAuthors", {
+            const data = await seeder.insert("channelAuthors", {
                 channel_id: 2,
             });
             expect(data.name).toEqual("John");
