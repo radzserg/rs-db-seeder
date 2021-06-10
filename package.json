@@ -1,7 +1,8 @@
 {
   "name": "rs-db-seeder",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "DB seeder tool for testing",
+  "private": false,
   "scripts": {
     "test": "jest",
     "build": "rm -Rf ./dist/* && NODE_ENV=production tsc --build tsconfig.json",

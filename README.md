@@ -8,7 +8,7 @@ When you have many dependent tables, it becomes difficult to create test data. S
 of changing a user's email address, , but you need to create two more dependent tables because the user tables have 
 constraints.
 
-![dependent tables](./docs/dependent_tables_hor.png)
+![dependent tables](https://github.com/radzserg/rs-db-seeder/blob/master/docs/dependent_tables_hor.png)
 
 In order to create `user` you have to create `project` and `channel` records first.
 
@@ -94,11 +94,6 @@ seeder.addFactory({
 
 # Usage
 
-## Build 
-
-Build operation allows you to build fake data for your entity. Data is not written to the database. It is somewhat 
-like a faker, it just builds data for the entire entity. Note: data for referenced tables 
-
 ```typescript
 
 const knex = configure();
@@ -116,6 +111,10 @@ it("updates user email", () => {
 # API
 
 ### Build
+
+Build operation allows you to build fake data for your entity. Data is not written to the database. It is somewhat
+like a faker, it just builds data for the entire entity. Note: data for referenced tables
+
 
 ```typescript
 const data = dbSeeder.build("user", { id: 100 });
