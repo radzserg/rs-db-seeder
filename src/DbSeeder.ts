@@ -2,7 +2,7 @@ import RefColumn from "./RefColumn";
 import { IStorageWriter } from "./IStorageWriter";
 export type DataProvider = (data?: any) => any;
 
-interface IFactory {
+export interface ISeedFactory {
     id: string; // unique factory ID
     tableName: string; // name of the table where factory will write data
     dataProvider: DataProvider; // function that will create mock data
@@ -15,14 +15,14 @@ interface IFactory {
  * Allows to easily seed DB. Useful for tests.
  */
 export default class DbSeeder {
-    private factories: IFactory[] = [];
+    private factories: ISeedFactory[] = [];
     private storage: IStorageWriter;
 
     constructor(storage: IStorageWriter) {
         this.storage = storage;
     }
 
-    public addFactory(factory: IFactory) {
+    public addFactory(factory: ISeedFactory) {
         this.factories.push(factory);
     }
 
@@ -33,7 +33,7 @@ export default class DbSeeder {
      */
     public async insert(id: string, data: any = {}) {
         const factory = this.getFactory(id);
-        const fakeData = factory.dataProvider(data);
+        const fakeData = this.build(id, data);
 
         const refs = factory.refs ?? [];
         const refData: any = {};
@@ -77,12 +77,15 @@ export default class DbSeeder {
      * @param id
      * @param data
      */
-    public build(id: string, data?: any): any {
+    public build(id: string, data: any = {}): any {
         const factory = this.getFactory(id);
+        if (!factory.dataProvider) {
+            return data;
+        }
         return factory.dataProvider(data);
     }
 
-    private getFactory(id: string): IFactory {
+    private getFactory(id: string): ISeedFactory {
         const factory = this.factories.find((f) => f.id === id);
         if (factory === undefined) {
             throw new Error(`Definition ${id} is not set up`);
