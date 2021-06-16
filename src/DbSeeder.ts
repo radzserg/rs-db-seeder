@@ -107,7 +107,7 @@ export default class DbSeeder implements Seeder {
             const factory = this.getFactory(factoryId);
             factory.delete
                 ? await factory.delete(data)
-                : await this.storage.insert(factory.tableName, data);
+                : await this.storage.delete(factory.tableName, data);
         }
     }
 
