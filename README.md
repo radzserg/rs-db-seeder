@@ -2,10 +2,25 @@
 
 `RS DB Seeder` makes it easy to populate database tables for your tests.
 
+
+- [Motivation](#Motivation)
+- [Getting Started](#Getting Started)
+    - [DB Adapter](#DB Adapter)
+    - [Factories](#Factories)
+- [Usage](#Usage)
+- [API](#API)
+    - [Build](#Build)
+    - [Insert](#Insert)
+        - [References](#References)
+        - [Custom insert implementation](#Custom insert implementation)
+- [Advanced usage](#Advanced usage)
+    - [Typings](#Typings)
+    - [Clean up](#Clean up)
+
 ## Motivation
 
 When you have many dependent tables, it becomes difficult to create test data. Sometimes you need to test the function
-of changing a user's email address, but you need to create two more dependent tables because the user table has 
+of changing a user's email address, but you need to create two more dependent tables because the user table has
 constraints.
 
 ![dependent tables](https://github.com/radzserg/rs-db-seeder/blob/master/docs/dependent_tables_hor.png)
@@ -33,15 +48,15 @@ rs-db-seeder allows you to do it in just one step
 await dbSeeder.insert("user", { name: "john" });
 ```
 
-**Any missing information**(phone, foreign_id fields) **will be added and dependent records** (channels, projects) 
+**Any missing information**(phone, foreign_id fields) **will be added and dependent records** (channels, projects)
 **will be automatically created** behind the scenes.
 
 # Getting Started
 
 ### DB Adapter
 
-`rs-db-seeder` is framework agnostic. It doesn't use specific ORM - like knex, typeorm, sequelize. So you will need 
-to build your own simple adapter for you application. The adapter implements `IStorageWriter` and has only one 
+`rs-db-seeder` is framework agnostic. It doesn't use specific ORM - like knex, typeorm, sequelize. So you will need
+to build your own simple adapter for you application. The adapter implements `IStorageWriter` and has only one
 method `insert`.
 
 Here's a simple `knex` adapter for `pg`.
@@ -54,35 +69,40 @@ export class KnexStorageWriter implements IStorageWriter {
     }
 
     insert = async (tableName: string, data: any) => {
-        const [result] = await this.knex(tableName).insert(data, '*');
+        const [result] = await this.knex(tableName).insert(data, "*");
         return {
             ...result,
             ...data,
         };
     };
+
+    delete = async (tableName: string, data: any): Promise<void> => {
+        await this.knex(tableName).where(data).delete();
+    };
 }
 ```
 
-### Setup factories
+### Factories
 
-Now that we have an adapter, we need to configure `rs-db-seeder`, so that it can generate test data and know about 
+Now that we have an adapter, we need to configure `rs-db-seeder`, so that it can generate test data and know about
 the dependent tables.
-
 
 ```typescript
 seeder.addFactory({
-    id: "user",             // unique factory ID 
-    tableName: "users",     // table name 
-    dataProvider: (data: any): any => ({    // data provider implementation
+    id: "user", // unique factory ID
+    tableName: "users", // table name
+    dataProvider: (data: any): any => ({
+        // data provider implementation
         id: 99,
         name: "John",
         phone: "55555555",
         foreign_id: 2132323,
         ...data,
     }),
-    refs: [                                // identify dependent relations
-        ref("channel"),   // by default consider users.channel_id => {channel}.id 
-        // alternatively  you can do  `ref("channel", 'uuid', ch_id)` users.ch_id => {channel}.uuid 
+    refs: [
+        // identify dependent relations
+        ref("channel"), // by default consider users.channel_id => {channel}.id
+        // alternatively  you can do  `ref("channel", 'uuid', ch_id)` users.ch_id => {channel}.uuid
     ],
 });
 seeder.addFactory({
@@ -95,65 +115,67 @@ seeder.addFactory({
 # Usage
 
 ```typescript
-
 const knex = configure();
 const storage = new KnexStorageWriter(knex);
 const dbSeeder = new DbSeeder(storage);
 
 it("updates user email", () => {
     const user = seeder.build("user", { name: "john" });
-    
-    const updatedUser = myUserMananger.updateName("tom") 
+
+    const updatedUser = myUserMananger.updateName("tom");
     expect(updatedUser.name).toEqual("tom");
 });
 ```
 
 # API
 
-### Build
+## Build
 
 Build operation allows you to build fake data for your entity. Data is not written to the database. It is somewhat
 like a faker, it just builds data for the entire entity. Note: data for referenced tables
 
-
 ```typescript
 const data = dbSeeder.build("user", { id: 100 });
-    // {
-    //   id: 100,
-    //   name: 'John',
-    //   phone: '55555555',
-    //   foreign_id: 2132323
-    // }
+// {
+//   id: 100,
+//   name: 'John',
+//   phone: '55555555',
+//   foreign_id: 2132323
+// }
 ```
+
 Note: data for referenced tables is not added. At the same time, no one bothers to add them ourselves.
 
 ```typescript
-const data = dbSeeder.build("user", { id: 100, channel: dbSeeder.build("channel") });
-    // {
-    //   id: 100,
-    //   name: 'John',
-    //   phone: '55555555',
-    //   foreign_id: 2132323
-    //   channel: {
-    //     name: "my channel"
-    //   }
-    // }
+const data = dbSeeder.build("user", {
+    id: 100,
+    channel: dbSeeder.build("channel"),
+});
+// {
+//   id: 100,
+//   name: 'John',
+//   phone: '55555555',
+//   foreign_id: 2132323
+//   channel: {
+//     name: "my channel"
+//   }
+// }
 ```
 
-### Insert
+## Insert
 
 `dbSeeder.insert` - will build and write data to the DB. Note: it's async method. All referenced fields will be built
 and inserted as well, i.e. we will do 2 inserts into (ref) channels and users
 
 ```typescript
 const data = await dbSeeder.insert("user", { id: 100 });
-   // {
-   //    id: 100,
-   //    name: 'John',
-   //    phone: '55555555',
-   //    channel_id: 60,            // channel with ID = 60 has created
-   //    foreign_id: 2132323
-   //  }
+// {
+//    id: 100,
+//    name: 'John',
+//    phone: '55555555',
+//    channel_id: 60,            // channel with ID = 60 has created
+//    foreign_id: 2132323
+//  }
 ```
 
 ### References
@@ -165,19 +187,24 @@ const channel = dbSeeder.build("channel" });
 const data = dbSeeder.build("user", { id: 100, channel_id: channel.id });
 ```
 
-if you pass data as an object 
+if you pass data as an object
+
 ```typescript
-const data = dbSeeder.build("user", { id: 100, channel: { name: "my channel"} });
+const data = dbSeeder.build("user", {
+    id: 100,
+    channel: { name: "my channel" },
+});
 ```
+
 `{ name: "my channel"}` will be passed to channel `insert` method.
 
-
 if you pass data as an object and an id field is specified, the dependent record will not be inserted.
+
 ```typescript
 const data = dbSeeder.build("user", { id: 100, channel: { id: 123 } });
 ```
 
-### Custom insert implementation 
+### Custom insert implementation
 
 It's possible to provide custom insert implementation
 
@@ -190,7 +217,7 @@ seeder.addFactory({
         name: "John",
         phone: "55555555",
         foreign_id: 2132323,
-        ...data
+        ...data,
     }),
     insert: async (data: any) => {
         const [user] = await knex("users")
@@ -224,4 +251,45 @@ seeder.addFactory({
     id: "user",
     tableName: "users",
 });
+```
+
+### Clean up
+
+In most cases, the simplest and most efficient approach is to use uncommitted transactions.
+
+```typescript
+// use transaction instead if clean up
+beforeEach(async () => {
+    await knex.raw("BEGIN");
+});
+afterEach(async () => {
+    await knex.raw("ROLLBACK");
+});
+
+it("insert data - simple case", async () => {
+    const data = await seeder.insert("channel");
+    ...
+});
+```
+
+Seeder also provides a "cleanup" function.
+
+```typescript
+afterEach(async () => {
+    await seeder.clean();
+});
+
+it("insert data - simple case", async () => {
+    const channel = await seeder.insert("channel");
+    const user = await seeder.insert("user", { channel });
+    ...
+});
+```
+
+Seeder stacks all inserts and then runs DELETE queries in reversed order, i.e.
+
+```typescript
+const storageWriter = new KnexStorageWriter();
+storageWriter.delete("user", { /* mocked data */ });
+storageWriter.delete("channel", { /* mocked data */ });
 ```
