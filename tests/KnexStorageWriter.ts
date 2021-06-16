@@ -1,4 +1,4 @@
-import { Knex }  from "knex";
+import { Knex } from "knex";
 import { IStorageWriter } from "../src";
 
 export class KnexStorageWriter implements IStorageWriter {
@@ -8,7 +8,7 @@ export class KnexStorageWriter implements IStorageWriter {
     }
 
     insert = async (tableName: string, data: any) => {
-        const [result] = await this.knex(tableName).insert(data, '*');
+        const [result] = await this.knex(tableName).insert(data, "*");
         return {
             ...result,
             ...data,
@@ -17,5 +17,5 @@ export class KnexStorageWriter implements IStorageWriter {
 
     delete = async (tableName: string, data: any): Promise<void> => {
         await this.knex(tableName).where(data).delete();
-    }
+    };
 }

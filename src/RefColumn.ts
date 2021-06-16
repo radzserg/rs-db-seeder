@@ -1,39 +1,48 @@
 export default class RefColumn {
     private readonly factoryId: string;
-    private readonly refId: string;
-    private readonly id: string;
+    private readonly referenceColumnName: string;
+    private readonly idColumnName: string;
 
     /**
      *
      * @param factoryId - unique factory ID
-     * @param id - field name that will be used as id column
-     * @param refId - reference column name, by default factoryId + '_id'
+     * @param idColumnName - field name that will be used as id column
+     * @param referenceColumnName - reference column name, by default factoryId + '_id'
      */
-    constructor(factoryId: string, id: string = "id", refId?: string) {
+    constructor(
+        factoryId: string,
+        idColumnName: string = "id",
+        referenceColumnName?: string
+    ) {
         this.factoryId = factoryId;
-        this.refId = refId ?? `${this.factoryId}_id`;
-        this.id = id;
+        this.referenceColumnName =
+            referenceColumnName ?? `${this.factoryId}_id`;
+        this.idColumnName = idColumnName;
     }
 
     public getFactoryId() {
         return this.factoryId;
     }
 
-    public getRefId() {
-        return this.refId;
+    public getReferenceColumnName() {
+        return this.referenceColumnName;
     }
 
-    public getId() {
-        return this.id;
+    public getIdColumnName() {
+        return this.idColumnName;
     }
 }
 
 /**
  *
  * @param factoryId - unique factory ID
- * @param id - field name that will be used as id column
- * @param refId - reference column name, by default factoryId + '_id'
+ * @param idColumnName - field name that will be used as id column
+ * @param referenceColumnName - reference column name, by default factoryId + '_id'
  */
-export function ref(factoryId: string, id: string = "id", refId?: string) {
-    return new RefColumn(factoryId, id, refId);
+export function ref(
+    factoryId: string,
+    idColumnName: string = "id",
+    referenceColumnName?: string
+) {
+    return new RefColumn(factoryId, idColumnName, referenceColumnName);
 }

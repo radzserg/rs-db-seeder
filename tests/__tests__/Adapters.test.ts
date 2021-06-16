@@ -40,7 +40,8 @@ describe("DbSeederAdapters", () => {
     ];
 
     afterAll(async () => {
-        await knex.raw("TRUNCATE channels CASCADE"); // @todo replace with seeder.clean()
+        await rawPgDbSeeder.clean();
+        await knexDbSeeder.clean();
         await knex.destroy();
         await pgClient.end();
     });
