@@ -201,3 +201,27 @@ seeder.addFactory({
     },
 });
 ```
+
+# Advanced usage
+
+### Typings
+
+```typescript
+type Factories = "users" | "channels";
+
+const seeder: Seeder<Factories> = new DbSeeder(storage);
+seeder.addFactory({
+    id: "users",
+    tableName: "users",
+});
+seeder.build("users");
+seeder.insert("users");
+
+// TS will signal errors
+seeder.insert("usr");
+seeder.build("usr");
+seeder.addFactory({
+    id: "user",
+    tableName: "users",
+});
+```

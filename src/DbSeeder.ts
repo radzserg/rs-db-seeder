@@ -2,19 +2,25 @@ import RefColumn from "./RefColumn";
 import { IStorageWriter } from "./IStorageWriter";
 export type DataProvider = (data?: any) => any;
 
-export interface ISeedFactory {
-    id: string; // unique factory ID
+export interface ISeedFactory<S = string> {
+    id: S; // unique factory ID
     tableName: string; // name of the table where factory will write data
-    dataProvider: DataProvider; // function that will create mock data
+    dataProvider?: DataProvider; // function that will create mock data
     // custom insert implementation, (useful for non-trivial cases)
     insert?: (data?: any) => Promise<any>;
     refs?: RefColumn[];
 }
 
+export interface Seeder<S = string> {
+    addFactory: (factory: ISeedFactory<S>) => void;
+    insert: (factoryId: S, data?: any) => Promise<any>;
+    build: (factoryId: S, data?: any) => any;
+}
+
 /**
  * Allows to easily seed DB. Useful for tests.
  */
-export default class DbSeeder {
+export default class DbSeeder implements Seeder {
     private factories: ISeedFactory[] = [];
     private storage: IStorageWriter;
 
