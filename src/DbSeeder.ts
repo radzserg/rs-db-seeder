@@ -1,5 +1,6 @@
 import RefColumn from "./RefColumn";
 import { IStorageWriter } from "./IStorageWriter";
+import { factory } from "ts-jest/dist/transformers/path-mapping";
 export type DataProvider = (data?: any) => any;
 
 export interface ISeedFactory<S = string> {
@@ -8,6 +9,8 @@ export interface ISeedFactory<S = string> {
     dataProvider?: DataProvider; // function that will create mock data
     // custom insert implementation, (useful for non-trivial cases)
     insert?: (data?: any) => Promise<any>;
+    // custom delete implementation, (useful for non-trivial cases)
+    delete?: (data?: any) => Promise<void>;
     refs?: RefColumn[];
 }
 
@@ -18,11 +21,13 @@ export interface Seeder<S = string> {
 }
 
 /**
- * Allows to easily seed DB. Useful for tests.
+ * Makes it easy to seed the database. Useful for tests.
  */
 export default class DbSeeder implements Seeder {
     private factories: ISeedFactory[] = [];
     private storage: IStorageWriter;
+
+    private insertedData: { factoryId: string; data: any }[] = [];
 
     constructor(storage: IStorageWriter) {
         this.storage = storage;
@@ -39,43 +44,45 @@ export default class DbSeeder implements Seeder {
      */
     public async insert(id: string, data: any = {}) {
         const factory = this.getFactory(id);
-        const fakeData = this.build(id, data);
+        const mockedData = this.build(id, data);
 
         const refs = factory.refs ?? [];
         const refData: any = {};
         await Promise.all(
             refs.map(async (ref) => {
-                const nestedData: any = fakeData
-                    ? fakeData[ref.getFactoryId()]
+                const nestedMockedData: any = mockedData
+                    ? mockedData[ref.getFactoryId()]
                     : {};
-                delete fakeData[ref.getFactoryId()];
+                delete mockedData[ref.getFactoryId()];
                 const fieldName = ref.getRefId();
-                if (typeof fakeData[fieldName] !== "undefined") {
-                    refData[fieldName] = fakeData[fieldName];
+                if (typeof mockedData[fieldName] !== "undefined") {
+                    refData[fieldName] = mockedData[fieldName];
                     return;
                 }
-                if (nestedData && nestedData[ref.getId()]) {
-                    refData[fieldName] = nestedData[ref.getId()];
+                if (nestedMockedData && nestedMockedData[ref.getId()]) {
+                    refData[fieldName] = nestedMockedData[ref.getId()];
                     return;
                 }
-                const nested = await this.insert(
+                const nestedInsertedData = await this.insert(
                     ref.getFactoryId(),
-                    nestedData
+                    nestedMockedData
                 );
-                refData[fieldName] = nested[ref.getId()];
+                refData[fieldName] = nestedInsertedData[ref.getId()];
             })
         );
 
         const resultedData: any = {
-            ...fakeData,
+            ...mockedData,
             ...refData,
         };
 
-        if (factory.insert) {
-            return await factory.insert(resultedData);
-        } else {
-            return await this.storage.insert(factory.tableName, resultedData);
-        }
+        const insertedData = factory.insert
+            ? await factory.insert(resultedData)
+            : await this.storage.insert(factory.tableName, resultedData);
+
+        this.insertedData.push({ factoryId: factory.id, data: insertedData });
+
+        return insertedData;
     }
 
     /**
@@ -89,6 +96,19 @@ export default class DbSeeder implements Seeder {
             return data;
         }
         return factory.dataProvider(data);
+    }
+
+    /**
+     * Clean up inserted data
+     */
+    public async clean() {
+        while (this.insertedData.length) {
+            const { factoryId, data } = this.insertedData.pop();
+            const factory = this.getFactory(factoryId);
+            factory.delete
+                ? await factory.delete(data)
+                : await this.storage.insert(factory.tableName, data);
+        }
     }
 
     private getFactory(id: string): ISeedFactory {

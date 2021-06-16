@@ -24,4 +24,25 @@ export class RawPgStorageWriter implements IStorageWriter {
             ...rows[0],
         };
     };
+
+    delete = async (
+        tableName: string,
+        data: { [key: string]: string }
+    ): Promise<any> => {
+        await this.client.connect();
+
+        const where = Object.keys(data)
+            .map((k, v) => {
+                return `${k} = $${v}`;
+            })
+            .join(" AND ");
+        const values = Object.values(data);
+
+        console.log(`DELETE FROM ${tableName} WHERE ${where}`)
+
+        await this.client.query(
+            `DELETE FROM ${tableName} WHERE ${where}`,
+            values
+        );
+    };
 }

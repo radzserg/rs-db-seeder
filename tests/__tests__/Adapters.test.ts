@@ -4,9 +4,6 @@ import { KnexStorageWriter } from "../KnexStorageWriter";
 import { ref } from "../../src";
 import { RawPgStorageWriter } from "../RawPgStorageWriter";
 
-
-// jest.setTimeout(10000);
-
 describe("DbSeederAdapters", () => {
     const knex = getKnexClient();
     const knexStorageWriter = new KnexStorageWriter(knex);
@@ -42,17 +39,11 @@ describe("DbSeederAdapters", () => {
         ["knexDbSeeder", knexDbSeeder],
     ];
 
-    afterAll(async() => {
+    afterAll(async () => {
+        await knex.raw("TRUNCATE channels CASCADE"); // @todo replace with seeder.clean()
         await knex.destroy();
         await pgClient.end();
-    })
-
-    // beforeEach(async () => {
-    //     await knex.raw("BEGIN");
-    // });
-    // afterEach(async () => {
-    //     await knex.raw("ROLLBACK");
-    // });
+    });
 
     it.each(testSeederAdapters)("%s builds data - simple case", (_, seeder) => {
         const data = seeder.build("channel");

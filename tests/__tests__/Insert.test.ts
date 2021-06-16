@@ -3,13 +3,13 @@ import { getKnexClient } from "../configure";
 import { KnexStorageWriter } from "../KnexStorageWriter";
 import { ref } from "../../src";
 
-describe("DbSeeder", () => {
+describe("Insert", () => {
     const knex = getKnexClient();
     const storage = new KnexStorageWriter(knex);
 
-    afterAll(async() => {
+    afterAll(async () => {
         await knex.destroy();
-    })
+    });
 
     describe("user and channel relation", () => {
         const seeder = new DbSeeder(storage);
@@ -37,21 +37,6 @@ describe("DbSeeder", () => {
             id: "channel",
             tableName: "channels",
             dataProvider: (data: any): any => ({ name: "channel_1", ...data }),
-        });
-
-        it("builds data - simple case", () => {
-            const data = seeder.build("channel");
-            expect(data.name).toEqual("channel_1");
-        });
-
-        it("builds data with referenced field", () => {
-            const data = seeder.build("user");
-            expect(data).toEqual({
-                id: 99,
-                name: "John",
-                phone: "55555555",
-                foreign_id: 2132323,
-            });
         });
 
         it("insert data - simple case", async () => {
@@ -101,7 +86,7 @@ describe("DbSeeder", () => {
             expect(data.id).not.toBeNull();
             const [channel] = await knex
                 .table("channels")
-                .orderBy("id", "desc");
+                .where('id', data.channel_id);
             expect(channel).not.toBeNull();
             expect(channel.name).toEqual("my channel");
         });
