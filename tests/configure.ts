@@ -22,6 +22,9 @@ export function getKnexClient(): Knex {
             database: "rsdbseeder",
             port: 5472,
         },
+        pool: {
+            max: 5,
+        },
         searchPath: ["public", "rsdbseeder"],
     });
 }

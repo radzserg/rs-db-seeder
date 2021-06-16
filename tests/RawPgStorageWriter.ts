@@ -5,6 +5,8 @@ export class RawPgStorageWriter implements IStorageWriter {
     constructor(private readonly client: Client) {}
 
     insert = async (tableName: string, data: any) => {
+        await this.client.connect();
+
         const fields = Object.keys(data);
         const values = Object.values(data);
         const placeholders = [];

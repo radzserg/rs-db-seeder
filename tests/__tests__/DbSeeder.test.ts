@@ -7,6 +7,10 @@ describe("DbSeeder", () => {
     const knex = getKnexClient();
     const storage = new KnexStorageWriter(knex);
 
+    afterAll(async() => {
+        await knex.destroy();
+    })
+
     describe("user and channel relation", () => {
         const seeder = new DbSeeder(storage);
 
