@@ -2,20 +2,20 @@
 
 `RS DB Seeder` makes it easy to populate database tables for your tests.
 
-
-- [Motivation](#Motivation)
-- [Getting Started](#Getting Started)
-    - [DB Adapter](#DB Adapter)
-    - [Factories](#Factories)
-- [Usage](#Usage)
-- [API](#API)
-    - [Build](#Build)
-    - [Insert](#Insert)
-        - [References](#References)
-        - [Custom insert implementation](#Custom insert implementation)
-- [Advanced usage](#Advanced usage)
-    - [Typings](#Typings)
-    - [Clean up](#Clean up)
+-   [Motivation](#Motivation)
+-   [Getting Started](#Getting Started)
+    -   [DB Adapter](#DB Adapter)
+    -   [Factories](#Factories)
+-   [Usage](#Usage)
+-   [API](#API)
+    -   [Build](#Build)
+    -   [Insert](#Insert)
+        -   [References](#References)
+        -   [Custom insert implementation](#Custom insert implementation)
+-   [Advanced usage](#Advanced usage)
+    -   [Typings](#Typings)
+    -   [Circular Table dependencies](#Circular Table dependencies)
+    -   [Clean up](#Clean up)
 
 ## Motivation
 
@@ -253,6 +253,23 @@ seeder.addFactory({
 });
 ```
 
+### Circular Table dependencies
+
+In case you have tables with circular dependencies
+
+```
+users(id, channel_id)    -> channel_id -> channels.od
+channels(id, project_id) -> project_id -> projects.id
+project(id, creator_id)  -> creator_id -> users.id
+```
+
+At least one table has nullable reference. Make sure you break the chain explicitly providing entity with nullable field.
+
+```typescript
+const channel = await seeder.insert("channel", { project_id: null });
+const user = await seeder.insert("user", { channel });
+```
+
 ### Clean up
 
 In most cases, the simplest and most efficient approach is to use uncommitted transactions.
@@ -290,6 +307,10 @@ Seeder stacks all inserts and then runs DELETE queries in reversed order, i.e.
 
 ```typescript
 const storageWriter = new KnexStorageWriter();
-storageWriter.delete("user", { /* mocked data */ });
-storageWriter.delete("channel", { /* mocked data */ });
+storageWriter.delete("user", {
+    /* mocked data */
+});
+storageWriter.delete("channel", {
+    /* mocked data */
+});
 ```
