@@ -115,9 +115,33 @@ seeder.addFactory({
 # Usage
 
 ```typescript
+
+// configure dbSeeder 
 const knex = configure();
 const storage = new KnexStorageWriter(knex);
 const dbSeeder = new DbSeeder(storage);
+
+seeder.addFactory({
+    id: "user",
+    tableName: "users",
+    dataProvider: (data: any): any => ({
+        name: faker.name.firstName(),
+        phone: faker.phone.phoneNumber(),
+        ...data,
+    }),
+    refs: [ref("channel")],
+});
+seeder.addFactory({
+    id: "channel",
+    tableName: "channels",
+    dataProvider: (data: any): any => ({
+        name: faker.random.alpha({ count: 10 }),
+        ...data,
+    }),
+});
+
+// usage in your tests
+import dbSeeder from "./configureDbSeeder";
 
 it("updates user email", () => {
     const user = seeder.build("user", { name: "john" });
