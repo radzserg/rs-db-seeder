@@ -1,16 +1,7 @@
 import DbSeeder from "../../src/DbSeeder";
 import { getKnexClient } from "../configure";
 import { KnexStorageWriter } from "../KnexStorageWriter";
-import RefColumn, { ref } from "../../src/RefColumn";
-
-type UserData = {
-    id: number;
-    name: string;
-    phone: string;
-    channel: RefColumn;
-    channel_id: number;
-    foreign_id: number;
-};
+import { ref } from "../../src";
 
 describe("DbSeeder", () => {
     const knex = getKnexClient();
