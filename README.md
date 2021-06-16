@@ -2,20 +2,20 @@
 
 `RS DB Seeder` makes it easy to populate database tables for your tests.
 
--   [Motivation](#Motivation)
--   [Getting Started](#Getting Started)
-    -   [DB Adapter](#DB Adapter)
-    -   [Factories](#Factories)
--   [Usage](#Usage)
+-   [Motivation](#motivation)
+-   [Getting Started](#getting-started)
+    -   [DB Adapter](#db-adapter)
+    -   [Factories](#factories)
+-   [Usage](#usage)
 -   [API](#API)
     -   [Build](#Build)
     -   [Insert](#Insert)
         -   [References](#References)
-        -   [Custom insert implementation](#Custom insert implementation)
--   [Advanced usage](#Advanced usage)
+        -   [Custom insert implementation](#Custom-insert-implementation)
+-   [Advanced usage](#Advanced-usage)
     -   [Typings](#Typings)
-    -   [Circular Table dependencies](#Circular Table dependencies)
-    -   [Clean up](#Clean up)
+    -   [Circular Table dependencies](#circular-table-dependencies)
+    -   [Clean up](#clean-up)
 
 ## Motivation
 
@@ -253,7 +253,7 @@ seeder.addFactory({
 });
 ```
 
-### Circular Table dependencies
+### Circular Table Dependencies
 
 In case you have tables with circular dependencies
 
