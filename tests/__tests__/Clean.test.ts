@@ -1,10 +1,10 @@
 import DbSeeder from "../../src/DbSeeder";
-import { getKnexClient } from "../configure";
+import { getKnexPgClient } from "../configure";
 import { KnexPgStorageWriter } from "../KnexPgStorageWriter";
 import { ref } from "../../src";
 
 describe("Clean", () => {
-    const knex = getKnexClient();
+    const knex = getKnexPgClient();
     const storage = new KnexPgStorageWriter(knex);
     const seeder = new DbSeeder(storage);
 

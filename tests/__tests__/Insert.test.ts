@@ -1,11 +1,11 @@
 import DbSeeder from "../../src/DbSeeder";
-import { getKnexClient } from "../configure";
+import { getKnexPgClient } from "../configure";
 import { KnexPgStorageWriter } from "../KnexPgStorageWriter";
 import { ref } from "../../src";
 import { randNumber } from "../faker";
 
 describe("Insert", () => {
-    const knex = getKnexClient();
+    const knex = getKnexPgClient();
     const storage = new KnexPgStorageWriter(knex);
 
     afterAll(async () => {

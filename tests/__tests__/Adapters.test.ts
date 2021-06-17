@@ -1,19 +1,28 @@
 import DbSeeder from "../../src/DbSeeder";
-import { configurePgClint, getKnexClient } from "../configure";
+import {
+    configurePgClint,
+    getKnexMysqlClient,
+    getKnexPgClient,
+} from "../configure";
 import { KnexPgStorageWriter } from "../KnexPgStorageWriter";
 import { ref } from "../../src";
 import { RawPgStorageWriter } from "../RawPgStorageWriter";
+import { KnexMysqlStorageWriter } from "../KnexMysqlStorageWriter";
 
 describe("DbSeederAdapters", () => {
-    const knex = getKnexClient();
-    const knexStorageWriter = new KnexPgStorageWriter(knex);
-    const knexDbSeeder = new DbSeeder(knexStorageWriter);
+    const knexPg = getKnexPgClient();
+    const knexPgStorageWriter = new KnexPgStorageWriter(knexPg);
+    const knexPgDbSeeder = new DbSeeder(knexPgStorageWriter);
 
     const pgClient = configurePgClint();
     const rawPgStorageWriter = new RawPgStorageWriter(pgClient);
     const rawPgDbSeeder = new DbSeeder(rawPgStorageWriter);
 
-    const seederAdapters = [knexDbSeeder, rawPgDbSeeder];
+    const knexMysql = getKnexMysqlClient();
+    const knexMysqlStorageWriter = new KnexMysqlStorageWriter(knexMysql);
+    const knexMysqlDbSeeder = new DbSeeder(knexMysqlStorageWriter);
+
+    const seederAdapters = [knexPgDbSeeder, rawPgDbSeeder, knexMysqlDbSeeder];
     seederAdapters.forEach((seeder) => {
         seeder.addFactory({
             id: "user",
@@ -35,14 +44,18 @@ describe("DbSeederAdapters", () => {
     });
 
     const testSeederAdapters: [string, DbSeeder][] = [
+        ["rawMysqlDbSeeder", knexMysqlDbSeeder],
         ["rawPgDbSeeder", rawPgDbSeeder],
-        ["knexDbSeeder", knexDbSeeder],
+        ["knexDbSeeder", knexPgDbSeeder],
     ];
 
     afterAll(async () => {
         await rawPgDbSeeder.clean();
-        await knexDbSeeder.clean();
-        await knex.destroy();
+        await knexPgDbSeeder.clean();
+        await knexMysqlDbSeeder.clean();
+
+        await knexMysql.destroy();
+        await knexPg.destroy();
         await pgClient.end();
     });
 
