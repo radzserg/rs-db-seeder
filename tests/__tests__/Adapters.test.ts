@@ -1,12 +1,12 @@
 import DbSeeder from "../../src/DbSeeder";
 import { configurePgClint, getKnexClient } from "../configure";
-import { KnexStorageWriter } from "../KnexStorageWriter";
+import { KnexPgStorageWriter } from "../KnexPgStorageWriter";
 import { ref } from "../../src";
 import { RawPgStorageWriter } from "../RawPgStorageWriter";
 
 describe("DbSeederAdapters", () => {
     const knex = getKnexClient();
-    const knexStorageWriter = new KnexStorageWriter(knex);
+    const knexStorageWriter = new KnexPgStorageWriter(knex);
     const knexDbSeeder = new DbSeeder(knexStorageWriter);
 
     const pgClient = configurePgClint();

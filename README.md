@@ -62,7 +62,7 @@ method `insert`.
 Here's a simple `knex` adapter for `pg`.
 
 ```typescript
-export class KnexStorageWriter implements IStorageWriter {
+export class KnexPgStorageWriter implements IStorageWriter {
     private knex: Knex;
     constructor(knex: Knex) {
         this.knex = knex;
@@ -118,7 +118,7 @@ seeder.addFactory({
 
 // configure dbSeeder 
 const knex = configure();
-const storage = new KnexStorageWriter(knex);
+const storage = new KnexPgStorageWriter(knex);
 const dbSeeder = new DbSeeder(storage);
 
 seeder.addFactory({
@@ -330,7 +330,7 @@ it("insert data - simple case", async () => {
 Seeder stacks all inserts and then runs DELETE queries in reversed order, i.e.
 
 ```typescript
-const storageWriter = new KnexStorageWriter();
+const storageWriter = new KnexPgStorageWriter();
 storageWriter.delete("user", {
     /* mocked data */
 });
