@@ -57,7 +57,7 @@ await dbSeeder.insert("user", { name: "john" });
 
 `rs-db-seeder` is framework agnostic. It doesn't use specific ORM - like knex, typeorm, sequelize. So you will need
 to build your own simple adapter for you application. The adapter implements `IStorageWriter` and has only one
-method `insert`. You can find Postgres and Mysql adapter implementation [here](https://github.com/radzserg/rs-db-seeder/tree/master/tests).
+method `insert`. You can find example Postgres and Mysql adapter implementations [here](https://github.com/radzserg/rs-db-seeder/tree/master/tests).
 
 Here's a simple `knex` adapter for `pg`.
 
