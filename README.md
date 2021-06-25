@@ -17,7 +17,6 @@
     -   [Typings](#typings)
     -   [Scenarios](#scenarios)
     -   [Circular Table dependencies](#circular-table-dependencies)
-    
 
 ## Motivation
 
@@ -201,11 +200,12 @@ const data = await dbSeeder.insert("user", { id: 100 });
 
 ### References
 
-If you created a dependent entity before, pass it as a pass it as a simple column value
+If you created a dependent entity before, pass it as a simple column value or as an object.
 
 ```typescript
-const channel = dbSeeder.build("channel" });
-const data = dbSeeder.build("user", { id: 100, channel_id: channel.id });
+const channel = dbSeeder.build("channel");
+const user1 = dbSeeder.build("user", { id: 100, channel_id: channel.id });
+const user2 = dbSeeder.build("user", { id: 100, channel });
 ```
 
 if you pass data as an object
@@ -313,7 +313,6 @@ seeder.addFactory({
     tableName: "users",
 });
 ```
-
 
 ### Scenarios
 
