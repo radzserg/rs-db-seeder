@@ -2,7 +2,7 @@ import { Knex } from "knex";
 import { IStorageWriter } from "../src";
 
 export class KnexPgStorageWriter implements IStorageWriter {
-    private knex: Knex;
+    protected knex: Knex;
     constructor(knex: Knex) {
         this.knex = knex;
     }

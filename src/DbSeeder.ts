@@ -15,8 +15,7 @@ export interface ISeedFactory<S = string> {
 export interface ISeedScenario<S = string> {
     id: S; // unique factory ID
     dataProvider?: DataProvider; // function that will create mock data
-    insert: (data?: any) => Promise<any>;
-    delete?: (data?: any) => Promise<void>;
+    insert: (storageWriter: IStorageWriter, data?: any) => Promise<any>;
 }
 
 export interface Seeder<S = string> {
@@ -59,7 +58,7 @@ export default class DbSeeder implements Seeder {
         }
         const scenario = this.getScenario(id);
         if (scenario) {
-            return await scenario.insert(data);
+            return await scenario.insert(this.storage, data);
         }
         throw new Error(`No factory or scenario with ID ${id} exists`);
     }
