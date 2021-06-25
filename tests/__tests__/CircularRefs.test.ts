@@ -10,9 +10,11 @@ describe("Circular Refs", () => {
 
     const seeder = new DbSeeder(storage);
 
-    afterAll(async () => {
-        await seeder.clean();
-        await knex.destroy();
+    beforeEach(async () => {
+        await knex.raw("BEGIN");
+    });
+    afterEach(async () => {
+        await knex.raw("ROLLBACK");
     });
 
     seeder.addFactory({

@@ -1,6 +1,6 @@
 import RefColumn from "./RefColumn";
 import { IStorageWriter } from "./IStorageWriter";
-import { factory } from "ts-jest/dist/transformers/path-mapping";
+
 export type DataProvider = (data?: any) => any;
 
 export interface ISeedFactory<S = string> {
@@ -9,8 +9,6 @@ export interface ISeedFactory<S = string> {
     dataProvider?: DataProvider; // function that will create mock data
     // custom insert implementation, (useful for non-trivial cases)
     insert?: (data?: any) => Promise<any>;
-    // custom delete implementation, (useful for non-trivial cases)
-    delete?: (data?: any) => Promise<void>;
     refs?: RefColumn[];
 }
 
@@ -26,8 +24,6 @@ export interface Seeder<S = string> {
 export default class DbSeeder implements Seeder {
     private factories: ISeedFactory[] = [];
     private storage: IStorageWriter;
-
-    private insertedData: { factoryId: string; data: any }[] = [];
 
     constructor(storage: IStorageWriter) {
         this.storage = storage;
@@ -97,13 +93,9 @@ export default class DbSeeder implements Seeder {
             ...refData,
         };
 
-        const insertedData = factory.insert
+        return factory.insert
             ? await factory.insert(resultedData)
             : await this.storage.insert(factory.tableName, resultedData);
-
-        this.insertedData.push({ factoryId: factory.id, data: insertedData });
-
-        return insertedData;
     }
 
     /**
@@ -117,19 +109,6 @@ export default class DbSeeder implements Seeder {
             return data;
         }
         return factory.dataProvider(data);
-    }
-
-    /**
-     * Clean up inserted data
-     */
-    public async clean() {
-        while (this.insertedData.length) {
-            const { factoryId, data } = this.insertedData.pop();
-            const factory = this.getFactory(factoryId);
-            factory.delete
-                ? await factory.delete(data)
-                : await this.storage.delete(factory.tableName, data);
-        }
     }
 
     private getFactory(id: string): ISeedFactory {

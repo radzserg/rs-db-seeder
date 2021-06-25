@@ -8,14 +8,9 @@ describe("Insert", () => {
     const knex = getKnexPgClient();
     const storage = new KnexPgStorageWriter(knex);
 
-    afterAll(async () => {
-        await knex.destroy();
-    });
-
     describe("user and channel relation", () => {
         const seeder = new DbSeeder(storage);
 
-        // use transaction instead if clean up
         beforeEach(async () => {
             await knex.raw("BEGIN");
         });

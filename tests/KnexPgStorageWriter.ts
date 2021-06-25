@@ -14,8 +14,4 @@ export class KnexPgStorageWriter implements IStorageWriter {
             ...data,
         };
     };
-
-    delete = async (tableName: string, data: any): Promise<void> => {
-        await this.knex(tableName).where(data).delete();
-    };
 }
