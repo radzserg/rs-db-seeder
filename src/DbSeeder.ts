@@ -31,18 +31,27 @@ export interface Seeder<S = string> {
 export default class DbSeeder implements Seeder {
     private factories: ISeedFactory[] = [];
     private scenarios: ISeedScenario[] = [];
-    private storage: IStorageWriter;
+    private readonly storage: IStorageWriter;
 
     constructor(storage: IStorageWriter) {
         this.storage = storage;
     }
 
     public addScenario(scenario: ISeedScenario) {
-        // @todo ensure that scenario is not registered
+        if (this.getScenario(scenario.id)) {
+            throw new Error(
+                `Scenario ${scenario.id} has been already registered`
+            );
+        }
         this.scenarios.push(scenario);
     }
 
     public addFactory(factory: ISeedFactory) {
+        if (this.getFactory(factory.id)) {
+            throw new Error(
+                `Factory ${factory.id} has been already registered`
+            );
+        }
         this.factories.push(factory);
     }
 
