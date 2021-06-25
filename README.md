@@ -12,10 +12,12 @@
     -   [Insert](#insert)
         -   [References](#references)
         -   [Custom insert implementation](#custom-insert-implementation)
+-   [Clean up](#clean-up)
 -   [Advanced usage](#advanced-usage)
     -   [Typings](#typings)
+    -   [Scenarios](#scenarios)
     -   [Circular Table dependencies](#circular-table-dependencies)
-    -   [Clean up](#clean-up)
+    
 
 ## Motivation
 
@@ -270,13 +272,12 @@ it("insert data - simple case", async () => {
 
 **Why Seeder does not delete data automatically**
 
-Let's say you are testing the creation of an article. The article must have an author. 
+Let's say you are testing the creation of an article. The article must have an author.
 (`creator_id integer constraint article_users_id_fk references users`)
 
 ```typescript
-
 afterEach(async () => {
-    await dbSeeder.cleanup();   // this method doesn't not exist, see explanation below
+    await dbSeeder.cleanup(); // this method doesn't not exist, see explanation below
 });
 
 const author = seeder.insert("author");
@@ -284,8 +285,8 @@ const article = postManager.addPost(...data, author);
 ```
 
 Seeder knows that it inserted an author record. It doesn't know about article record. It has been added by `postManager`.
-If we try to delete data inserted by the Seeder we will delete only the author record and it leads to constraint 
-violation since an article must have an author. 
+If we try to delete data inserted by the Seeder we will delete only the author record and it leads to constraint
+violation since an article must have an author.
 
 To avoid such conflicts, we abandoned the idea of automatic data deletion.
 
@@ -310,6 +311,55 @@ seeder.build("usr");
 seeder.addFactory({
     id: "user",
     tableName: "users",
+});
+```
+
+
+### Scenarios
+
+For non-trivial cases, you can use scripts. Let's say you need to create records using transactions.
+
+```typescript
+class AdvancedKnexPgStorageWriter extends KnexPgStorageWriter {
+    async transaction<T>(
+        callback: (trx: Knex.Transaction) => Promise<T> | void
+    ) {
+        return await this.knex.transaction(callback);
+    }
+}
+const knex = getKnexPgClient();
+const storage = new AdvancedKnexPgStorageWriter(knex);
+const seeder: Seeder<"userWithChannel"> = new DbSeeder(storage);
+
+seeder.addScenario({
+    id: "userWithChannel",
+    insert: async (
+        storage: AdvancedKnexPgStorageWriter,
+        data: any
+    ): Promise<any> => {
+        return await storage.transaction(async () => {
+            const channel = await storage.insert("channels", {
+                name: data.channel.name,
+            });
+
+            const user = await storage.insert("users", {
+                name: "John",
+                phone: "55555555",
+                foreign_id: randNumber(),
+                channel_id: channel.id,
+            });
+
+            return { user, channel };
+        });
+    },
+});
+```
+
+Then you can use it in the same way as you use factories.
+
+```typescript
+const { user, channel } = await seeder.insert("userWithChannel", {
+    channel: { name: "Woh channel" },
 });
 ```
 

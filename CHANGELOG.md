@@ -1,5 +1,11 @@
 # Changelog
 
+# 2.3.0
+
+## Changed
+
+- Adds scenario 
+
 # 2.2.4
 
 ## Changed
