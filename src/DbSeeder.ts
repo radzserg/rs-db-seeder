@@ -1,6 +1,5 @@
 import RefColumn from "./RefColumn";
 import { IStorageWriter } from "./IStorageWriter";
-import { factory } from "ts-jest/dist/transformers/path-mapping";
 export type DataProvider = (data?: any) => any;
 
 export interface ISeedFactory<S = string> {
@@ -68,6 +67,13 @@ export default class DbSeeder implements Seeder {
         throw new Error(`No factory or scenario with ID ${id} exists`);
     }
 
+    /**
+     * Runs insert and control circular references between tables
+     * @param factoryId
+     * @param data
+     * @param deps
+     * @private
+     */
     private async insertWithCircularRefCheck(
         factoryId: string,
         data: any = {},
@@ -145,13 +151,14 @@ export default class DbSeeder implements Seeder {
      * Clean up inserted data
      */
     public async clean() {
-        while (this.insertedData.length) {
-            const { factoryId, data } = this.insertedData.pop();
+        while (this.factoryInsertedData.length) {
+            const { factoryId, data } = this.factoryInsertedData.pop();
             const factory = this.getFactory(factoryId);
             factory.delete
                 ? await factory.delete(data)
                 : await this.storage.delete(factory.tableName, data);
         }
+        // const scenario = this.getScenario(id)
     }
 
     private getFactory(id: string): ISeedFactory {
