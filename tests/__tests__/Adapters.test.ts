@@ -43,21 +43,26 @@ describe("DbSeederAdapters", () => {
         });
     });
 
-    const testSeederAdapters: [string, DbSeeder][] = [
-        ["rawMysqlDbSeeder", knexMysqlDbSeeder],
-        ["rawPgDbSeeder", rawPgDbSeeder],
-        ["knexDbSeeder", knexPgDbSeeder],
+    const testSeederAdapters: [string, DbSeeder, Function, Function][] = [
+        [
+            "rawMysqlDbSeeder",
+            knexMysqlDbSeeder,
+            async () => await knexMysql.raw("START TRANSACTION"),
+            async () => await knexMysql.raw("ROLLBACK"),
+        ],
+        [
+            "rawPgDbSeeder",
+            rawPgDbSeeder,
+            async () => await pgClient.query("BEGIN"),
+            async () => await pgClient.query("ROLLBACK"),
+        ],
+        [
+            "knexDbSeeder",
+            knexPgDbSeeder,
+            async () => await knexPg.raw("BEGIN"),
+            async () => await knexPg.raw("ROLLBACK"),
+        ],
     ];
-
-    afterAll(async () => {
-        await rawPgDbSeeder.clean();
-        await knexPgDbSeeder.clean();
-        await knexMysqlDbSeeder.clean();
-
-        await knexMysql.destroy();
-        await knexPg.destroy();
-        await pgClient.end();
-    });
 
     it.each(testSeederAdapters)("%s builds data - simple case", (_, seeder) => {
         const data = seeder.build("channel");
@@ -79,10 +84,12 @@ describe("DbSeederAdapters", () => {
 
     it.each(testSeederAdapters)(
         "%s insert data - simple case",
-        async (_, seeder) => {
+        async (_, seeder, beginTransaction, rollback) => {
+            await beginTransaction();
             const data = await seeder.insert("channel");
             expect(data.name).toEqual("channel_1");
             expect(data.id).not.toBeNull();
+            await rollback();
         }
     );
 });

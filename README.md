@@ -75,10 +75,6 @@ export class KnexPgStorageWriter implements IStorageWriter {
             ...data,
         };
     };
-
-    delete = async (tableName: string, data: any): Promise<void> => {
-        await this.knex(tableName).where(data).delete();
-    };
 }
 ```
 
@@ -252,6 +248,47 @@ seeder.addFactory({
 });
 ```
 
+# Clean up
+
+The simplest and most efficient approach is to use uncommitted transactions. We insert data, do our tests, then inserted
+data is erased because the transaction is rolled back.
+
+```typescript
+// use transaction instead if clean up
+beforeEach(async () => {
+    await knex.raw("BEGIN");
+});
+afterEach(async () => {
+    await knex.raw("ROLLBACK");
+});
+
+it("insert data - simple case", async () => {
+    const data = await seeder.insert("channel");
+    ...
+});
+```
+
+**Why Seeder does not delete data automatically**
+
+Let's say you are testing the creation of an article. The article must have an author. 
+(`creator_id integer constraint article_users_id_fk references users`)
+
+```typescript
+
+afterEach(async () => {
+    await dbSeeder.cleanup();   // this method doesn't not exist, see explanation below
+});
+
+const author = seeder.insert("author");
+const article = postManager.addPost(...data, author);
+```
+
+Seeder knows that it inserted an author record. It doesn't know about article record. It has been added by `postManager`.
+If we try to delete data inserted by the Seeder we will delete only the author record and it leads to constraint 
+violation since an article must have an author. 
+
+To avoid such conflicts, we abandoned the idea of automatic data deletion.
+
 # Advanced usage
 
 ### Typings
@@ -291,49 +328,4 @@ At least one table has nullable reference. Make sure you break the chain explici
 ```typescript
 const channel = await seeder.insert("channel", { project_id: null });
 const user = await seeder.insert("user", { channel });
-```
-
-### Clean up
-
-In most cases, the simplest and most efficient approach is to use uncommitted transactions.
-
-```typescript
-// use transaction instead if clean up
-beforeEach(async () => {
-    await knex.raw("BEGIN");
-});
-afterEach(async () => {
-    await knex.raw("ROLLBACK");
-});
-
-it("insert data - simple case", async () => {
-    const data = await seeder.insert("channel");
-    ...
-});
-```
-
-Seeder also provides a "cleanup" function.
-
-```typescript
-afterEach(async () => {
-    await seeder.clean();
-});
-
-it("insert data - simple case", async () => {
-    const channel = await seeder.insert("channel");
-    const user = await seeder.insert("user", { channel });
-    ...
-});
-```
-
-Seeder stacks all inserts and then runs DELETE queries in reversed order, i.e.
-
-```typescript
-const storageWriter = new KnexPgStorageWriter();
-storageWriter.delete("user", {
-    /* mocked data */
-});
-storageWriter.delete("channel", {
-    /* mocked data */
-});
 ```

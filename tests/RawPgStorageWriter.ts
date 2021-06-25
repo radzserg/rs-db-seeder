@@ -5,11 +5,6 @@ export class RawPgStorageWriter implements IStorageWriter {
     constructor(private readonly client: Client) {}
 
     insert = async (tableName: string, data: any) => {
-        // @ts-ignore
-        if (!this.client.readyForQuery) {
-            await this.client.connect();
-        }
-
         const fields = Object.keys(data);
         const values = Object.values(data);
         const placeholders = [];
@@ -26,27 +21,5 @@ export class RawPgStorageWriter implements IStorageWriter {
             ...data,
             ...rows[0],
         };
-    };
-
-    delete = async (
-        tableName: string,
-        data: { [key: string]: string }
-    ): Promise<any> => {
-        // @ts-ignore
-        if (!this.client.readyForQuery) {
-            await this.client.connect();
-        }
-
-        const where = Object.keys(data)
-            .map((v, index) => {
-                index++;
-                return `${v} = $${index}`;
-            })
-            .join(" AND ");
-        const values = Object.values(data);
-        await this.client.query(
-            `DELETE FROM ${tableName} WHERE ${where}`,
-            values
-        );
     };
 }

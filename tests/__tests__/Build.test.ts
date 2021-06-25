@@ -9,10 +9,6 @@ describe("Builds", () => {
 
     const seeder = new DbSeeder(storage);
 
-    afterAll(async () => {
-        await knex.destroy();
-    });
-
     seeder.addFactory({
         id: "user",
         tableName: "users",
