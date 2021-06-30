@@ -8,10 +8,18 @@ export class KnexPgStorageWriter implements IStorageWriter {
     }
 
     insert = async (tableName: string, data: any) => {
-        const [result] = await this.knex(tableName).insert(data, "*");
-        return {
-            ...result,
-            ...data,
-        };
+        try {
+            const [result] = await this.knex(tableName).insert(data, "*");
+            return {
+                ...result,
+                ...data,
+            };
+        } catch (e) {
+            throw new Error(
+                `Cannot insert data to ${tableName}. Data: ${JSON.stringify(
+                    data
+                )}. Error Details: ${e.toString()}`
+            );
+        }
     };
 }

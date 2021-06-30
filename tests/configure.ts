@@ -31,7 +31,8 @@ export function getKnexPgClient(): Knex {
                 port: 5472,
             },
             pool: {
-                max: 5,
+                min: 1,
+                max: 1,
             },
             searchPath: ["public", "rsdbseeder"],
         });

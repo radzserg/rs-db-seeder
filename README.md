@@ -320,12 +320,12 @@ For non-trivial cases, you can use scripts. Let's say you need to create records
 
 ```typescript
 class AdvancedKnexPgStorageWriter extends KnexPgStorageWriter {
-    async transaction<T>(
-        callback: (trx: Knex.Transaction) => Promise<T> | void
-    ) {
-        return await this.knex.transaction(callback);
+    getKnex() {
+        return this.knex;
     }
 }
+
+
 const knex = getKnexPgClient();
 const storage = new AdvancedKnexPgStorageWriter(knex);
 const seeder: Seeder<"userWithChannel"> = new DbSeeder(storage);
@@ -336,20 +336,21 @@ seeder.addScenario({
         storage: AdvancedKnexPgStorageWriter,
         data: any
     ): Promise<any> => {
-        return await storage.transaction(async () => {
-            const channel = await storage.insert("channels", {
-                name: data.channel.name,
-            });
+        const knex = storage.getKnex();
+        knex.raw("BEGIN");
 
-            const user = await storage.insert("users", {
-                name: "John",
-                phone: "55555555",
-                foreign_id: randNumber(),
-                channel_id: channel.id,
-            });
-
-            return { user, channel };
+        const channel = await storage.insert("channels", {
+            name: data.channel.name,
         });
+
+        const user = await storage.insert("users", {
+            name: "John",
+            phone: "55555555",
+            foreign_id: randNumber(),
+            channel_id: channel.id,
+        });
+        knex.raw("COMMIT");
+        return { user, channel };
     },
 });
 ```

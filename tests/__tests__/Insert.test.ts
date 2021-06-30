@@ -8,21 +8,21 @@ describe("Insert", () => {
     const knex = getKnexPgClient();
     const storage = new KnexPgStorageWriter(knex);
 
+    beforeEach(async () => {
+        await knex.raw("BEGIN");
+    });
+    afterEach(async () => {
+        await knex.raw("ROLLBACK");
+    });
+
     describe("user and channel relation", () => {
         const seeder = new DbSeeder(storage);
-
-        beforeEach(async () => {
-            await knex.raw("BEGIN");
-        });
-        afterEach(async () => {
-            await knex.raw("ROLLBACK");
-        });
 
         seeder.addFactory({
             id: "user",
             tableName: "users",
             dataProvider: (data: any): any => ({
-                id: randNumber(),
+                // id: randNumber(),
                 name: "John",
                 phone: "55555555",
                 foreign_id: randNumber(),
@@ -88,16 +88,30 @@ describe("Insert", () => {
             expect(data.id).not.toBeNull();
             expect(data.channel_id).toEqual(channel.id);
         });
+
+        it("insert many records", async () => {
+            const channel = await seeder.insert("channel");
+            const users = await seeder.insertMany(10, "user", {
+                channel,
+            });
+            expect(users).toHaveLength(10);
+            expect(users).toEqual(
+                expect.arrayContaining(
+                    new Array(10).fill(
+                        expect.objectContaining({
+                            id: expect.any(Number),
+                            foreign_id: expect.any(Number),
+                            channel_id: channel.id,
+                            name: "John",
+                            phone: "55555555",
+                        })
+                    )
+                )
+            );
+        });
     });
 
     describe("relation with customized name", () => {
-        beforeEach(async () => {
-            await knex.raw("BEGIN");
-        });
-        afterEach(async () => {
-            await knex.raw("ROLLBACK");
-        });
-
         const seeder = new DbSeeder(storage);
         seeder.addFactory({
             id: "channelAuthors",
@@ -127,27 +141,21 @@ describe("Insert", () => {
         });
 
         it("insert data when referenced field is provided", async () => {
-            const channel = await seeder.insert("channel", { id: 2 });
-            expect(channel.id).toEqual(2);
+            const channelId = 2;
+            const channel = await seeder.insert("channel", { id: channelId });
+            expect(channel.id).toEqual(channelId);
             const data = await seeder.insert("channelAuthors", {
-                channel_id: 2,
+                channel_id: channelId,
             });
             expect(data.name).toEqual("John");
             expect(data.id).not.toBeNull();
             expect(data.phone).toEqual("55555555");
-            expect(data.channel_id).toEqual(2);
+            expect(data.channel_id).toEqual(channelId);
             expect(data.foreign_id).not.toBeNull();
         });
     });
 
     describe("predefined relation column value", () => {
-        beforeEach(async () => {
-            await knex.raw("BEGIN");
-        });
-        afterEach(async () => {
-            await knex.raw("ROLLBACK");
-        });
-
         const seeder = new DbSeeder(storage);
         seeder.addFactory({
             id: "user",
@@ -167,7 +175,7 @@ describe("Insert", () => {
                 tableName: "channels",
                 dataProvider: (data): any => ({ name: "channel_1", ...data }),
             });
-            seeder.insert("channel", { id: 2 });
+            await seeder.insert("channel", { id: 2 });
 
             const user = await seeder.insert("user");
             expect(user).not.toBeNull();
@@ -176,13 +184,6 @@ describe("Insert", () => {
     });
 
     describe("custom insert method", () => {
-        beforeEach(async () => {
-            await knex.raw("BEGIN");
-        });
-        afterEach(async () => {
-            await knex.raw("ROLLBACK");
-        });
-
         const seeder = new DbSeeder(storage);
         seeder.addFactory({
             id: "channel",

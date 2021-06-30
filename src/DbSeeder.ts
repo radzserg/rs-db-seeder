@@ -22,6 +22,7 @@ export interface Seeder<S = string> {
     addFactory: (factory: ISeedFactory<S>) => void;
     addScenario: (scenario: ISeedScenario<S>) => void;
     insert: (factoryId: S, data?: any) => Promise<any>;
+    insertMany: (amount: number, factoryId: S, data?: any) => Promise<any>;
     build: (factoryId: S, data?: any) => any;
 }
 
@@ -73,6 +74,20 @@ export default class DbSeeder implements Seeder {
     }
 
     /**
+     * Return many entities
+     * @param amount
+     * @param id
+     * @param data
+     */
+    public async insertMany(amount: number, id: string, data: any = {}) {
+        return await Promise.all(
+            new Array(amount).fill(0).map(async (_) => {
+                return await this.insert(id, data);
+            })
+        );
+    }
+
+    /**
      * Runs insert and control circular references between tables
      * @param factoryId
      * @param data
@@ -94,36 +109,46 @@ export default class DbSeeder implements Seeder {
         const mockedData = this.build(factoryId, data);
 
         const refs = factory.refs ?? [];
-        const refData: any = {};
-        await Promise.all(
-            refs.map(async (ref) => {
-                const nestedMockedData: any = mockedData
-                    ? mockedData[ref.getFactoryId()]
-                    : {};
-                delete mockedData[ref.getFactoryId()];
-                const refColumnName = ref.getReferenceColumnName();
-                if (typeof mockedData[refColumnName] !== "undefined") {
-                    refData[refColumnName] = mockedData[refColumnName];
-                    return;
-                }
-                if (
-                    nestedMockedData &&
-                    nestedMockedData[ref.getIdColumnName()]
-                ) {
-                    refData[refColumnName] =
-                        nestedMockedData[ref.getIdColumnName()];
-                    return;
-                }
-                deps.push(ref.getFactoryId());
-                const nestedInsertedData = await this.insertWithCircularRefCheck(
-                    ref.getFactoryId(),
-                    nestedMockedData,
-                    deps
-                );
-                refData[refColumnName] =
-                    nestedInsertedData[ref.getIdColumnName()];
-            })
-        );
+        const refData = (
+            await Promise.all(
+                refs.map(async (ref) => {
+                    const nestedMockedData: any = mockedData
+                        ? mockedData[ref.getFactoryId()]
+                        : {};
+                    delete mockedData[ref.getFactoryId()];
+                    const refColumnName = ref.getReferenceColumnName();
+                    if (typeof mockedData[refColumnName] !== "undefined") {
+                        return {
+                            [refColumnName]: mockedData[refColumnName],
+                        };
+                    }
+                    if (
+                        nestedMockedData &&
+                        nestedMockedData[ref.getIdColumnName()]
+                    ) {
+                        return {
+                            [refColumnName]:
+                                nestedMockedData[ref.getIdColumnName()],
+                        };
+                    }
+                    deps.push(ref.getFactoryId());
+                    const nestedInsertedData = await this.insertWithCircularRefCheck(
+                        ref.getFactoryId(),
+                        nestedMockedData,
+                        deps
+                    );
+                    return {
+                        [refColumnName]:
+                            nestedInsertedData[ref.getIdColumnName()],
+                    };
+                })
+            )
+        ).reduce((acc, fieldData) => {
+            return {
+                ...acc,
+                ...fieldData,
+            };
+        }, {});
 
         const resultedData: any = {
             ...mockedData,
