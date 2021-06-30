@@ -198,6 +198,18 @@ const data = await dbSeeder.insert("user", { id: 100 });
 //  }
 ```
 
+## Insert Many
+
+`dbSeeder.insertMany` inserts multiple records
+
+```typescript
+const [channel1, channel2] = await seeder.insertMany(2, "channel", {
+    name: "channel_1",
+});
+```
+
+inserts 2 `channel` records with `name: channel_1` 
+
 ### References
 
 If you created a dependent entity before, pass it as a simple column value or as an object.
@@ -324,7 +336,6 @@ class AdvancedKnexPgStorageWriter extends KnexPgStorageWriter {
         return this.knex;
     }
 }
-
 
 const knex = getKnexPgClient();
 const storage = new AdvancedKnexPgStorageWriter(knex);

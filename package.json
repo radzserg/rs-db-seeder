@@ -1,6 +1,6 @@
 {
   "name": "rs-db-seeder",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "DB seeder tool for testing",
   "private": false,
   "scripts": {

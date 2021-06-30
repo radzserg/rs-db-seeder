@@ -1,5 +1,12 @@
 # Changelog
 
+# 2.3.1
+
+## Changed
+
+- Adds insert many
+
+
 # 2.3.0
 
 ## Changed

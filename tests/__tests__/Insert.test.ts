@@ -89,9 +89,30 @@ describe("Insert", () => {
             expect(data.channel_id).toEqual(channel.id);
         });
 
+        it("insert many records simple case", async () => {
+            const [channel1, channel2] = await seeder.insertMany(2, "channel");
+            expect(channel1).not.toBeNull();
+            expect(channel1).toEqual(
+                expect.objectContaining({
+                    id: expect.any(Number),
+                    name: "channel_1",
+                    project_id: null,
+                })
+            );
+            expect(channel2).not.toBeNull();
+            expect(channel2).toEqual(
+                expect.objectContaining({
+                    id: expect.any(Number),
+                    name: "channel_1",
+                    project_id: null,
+                })
+            );
+        });
+
         it("insert many records", async () => {
             const channel = await seeder.insert("channel");
             const users = await seeder.insertMany(10, "user", {
+                name: "Tom",
                 channel,
             });
             expect(users).toHaveLength(10);
@@ -102,7 +123,7 @@ describe("Insert", () => {
                             id: expect.any(Number),
                             foreign_id: expect.any(Number),
                             channel_id: channel.id,
-                            name: "John",
+                            name: "Tom",
                             phone: "55555555",
                         })
                     )
